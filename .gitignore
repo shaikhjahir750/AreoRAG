@@ -1,0 +1,41 @@
+# Environment & Secret variables
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+*.venv
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Vector Database (Local binary files & SQLite DB)
+chroma_db/
+*.parquet
+
+# Downloaded Raw PDFs (regenerated via docs/document_download_script.py)
+docs/documents/*.pdf
+!docs/documents/.gitkeep
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Evaluation & Logs
+.ragas/
+*.log

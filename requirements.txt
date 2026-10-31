@@ -1,0 +1,27 @@
+# Core LLM Framework & Orchestration
+langchain>=0.2.14
+langchain-core>=0.2.35
+langchain-community>=0.2.12
+langgraph>=0.2.16
+
+# Provider Integrations
+langchain-google-genai>=1.0.8
+google-generativeai>=0.7.2
+
+# Vector Storage & Retrieval
+chromadb>=0.5.5
+
+# Document Parsing & Processing
+pymupdf>=1.24.9
+pydantic>=2.8.2
+pydantic-settings>=2.4.0
+pypdf
+# Evaluation Harness
+ragas>=0.1.14
+datasets>=2.20.0
+
+# User Interface & Utilities
+streamlit>=1.37.1
+python-dotenv>=1.0.1
+requests>=2.32.3
+tqdm>=4.66.5
