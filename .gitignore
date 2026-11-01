@@ -16,9 +16,6 @@ __pycache__/
 *$py.class
 *.so
 
-# Vector Database (Local binary files & SQLite DB)
-chroma_db/
-*.parquet
 
 # Downloaded Raw PDFs (regenerated via docs/document_download_script.py)
 docs/documents/*.pdf
