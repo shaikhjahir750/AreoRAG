@@ -3,10 +3,17 @@ langchain>=0.2.14
 langchain-core>=0.2.35
 langchain-community>=0.2.12
 langgraph>=0.2.16
+ rank-bm25 
+ flashrank 
+ langchain-google-genai 
+ langchain-chroma 
+ langchain-core
+ langchain_classic
 
 # Provider Integrations
 langchain-google-genai>=1.0.8
 google-generativeai>=0.7.2
+langchain_groq
 
 # Vector Storage & Retrieval
 chromadb>=0.5.5

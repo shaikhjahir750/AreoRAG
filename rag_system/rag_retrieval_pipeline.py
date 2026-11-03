@@ -5,6 +5,10 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_classic.retrievers import ContextualCompressionRetriever
+import tempfile
+from flashrank import Ranker
+from langchain_community.document_compressors import FlashrankRerank
 
 load_dotenv(override=True)
 
@@ -33,23 +37,27 @@ doc_count = vectorstore._collection.count()
 print(f"Connected to ChromaDB! Total indexed chunks: {doc_count}")
 
 # 3. Create retriever with standard similarity search (no threshold dropping)
-retriever = vectorstore.as_retriever(
+base_retriever = vectorstore.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 2}
+    search_kwargs={"k": 6}
 )
-retriever = vectorstore.as_retriever(
-    search_type="similarity",
-    search_kwargs={"k": 2},
+
+compressor = FlashrankRerank(client=Ranker(cache_dir=tempfile.gettempdir()), top_n=3)
+retriever = ContextualCompressionRetriever(
+    base_compressor=compressor,
+    base_retriever=base_retriever
 )
 
 # 4. LLM, Prompt, and Pipeline using the pipe operator (|)
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest", temperature=0.0)
 
 prompt = ChatPromptTemplate.from_template(
     """You are an expert NASA aerospace historian and technical investigator.
-Use ONLY the following retrieved technical context to answer the user's question.
-If the answer is not in the context, say: 'I cannot find relevant information in the indexed mission documents.
-answer under 100 words'
+Use ONLY the provided technical context to answer the question.
+If the answer cannot be directly derived from the context, respond strictly with:
+"I cannot find relevant information in the indexed mission documents."
+
+Keep your answer concise, fact-based, and under 100 words.
 
 Context:
 {context}
@@ -57,9 +65,8 @@ Context:
 Question: {question}
 Answer:"""
 )
-
-# LCEL Pipeline: retrieves documents, formats prompt, queries LLM, and parses output
-chain = (
+# this chain retrieves documents, formats prompt, queries LLM, and parses output
+rag_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
     | llm
@@ -72,7 +79,7 @@ def retrieve_docs(query: str):
     print("=" * 60)
 
     # Invoke the pipeline directly
-    response = chain.invoke(query)
+    response = rag_chain.invoke(query)
 
     print("\nAnswer:\n", response)
     print("-" * 60)
