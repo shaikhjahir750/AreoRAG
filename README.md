@@ -23,7 +23,9 @@
 - [Usage Workflow](#-usage-workflow)
   - [1. Download Source Documents](#1-download-source-documents)
   - [2. Build the Chroma Vector Database](#2-build-the-chroma-vector-database)
+  - [3. Run the Retrieval Pipeline](#3-run-the-retrieval-pipeline)
 - [Important: Handling Embedding Rate Limits](#-important-handling-embedding-rate-limits)
+- [RAG Evaluation (Upcoming)](#-rag-evaluation-upcoming)
 - [GitHub Desktop Workflow](#-github-desktop-workflow)
 - [License](#-license)
 
@@ -77,10 +79,11 @@ AreoRAG curates technical aerospace literature across two major space agencies:
 ## ✨ Key Features
 
 - **Multi-Agency Metadata Tagging**: Chunks are enriched with `agency`, `mission`, `category`, and `file_name` for targeted filtering (e.g., query *only* Apollo anomaly reports or *only* ISRO crew safety tests).
-- **Quota-Aware Batch Ingestion**: Ingests in 25-chunk batches with configurable delays to respect API rate limits.
+- **Quota-Aware Batch Ingestion**: Ingests in 15-chunk batches with explicit delays to respect API rate limits.
 - **Checkpointing & Deduplication**: Checks existing Chroma collections to prevent re-embedding already indexed files, saving API tokens.
 - **Dual LLM Provider Support**: Compatible with Google Gemini for native embeddings and Groq (LLaMA 3.3 70B) for ultra-fast response generation.
-- **Evaluation Harness**: Pre-configured with `ragas` and `datasets` to measure context recall, answer relevance, and faithfulness.
+- **Contextual Reranking**: Integrates Flashrank reranking to optimize precision across dense technical passages.
+- **Evaluation Framework (Coming Soon)**: Automated LLM-as-a-judge benchmarking using RAGAS and custom aerospace evaluation datasets is actively planned and will be introduced in coming updates.
 
 ---
 
@@ -89,14 +92,16 @@ AreoRAG curates technical aerospace literature across two major space agencies:
 ```
 AreoRAG/
 ├── .env.example                     # Sample template for API keys
-├── .gitignore                        # Configured for GitHub Desktop, venv, ChromaDB & PDFs
+├── .gitignore                       # Configured for GitHub Desktop, venv, ChromaDB & PDFs
 ├── requirements.txt                 # Project dependencies
-├── README.md                        # Documentation
+├── README.md                        # Project documentation
 ├── docs/
 │   ├── document_download_script.py # Automated downloader for NASA/ISRO PDFs
 │   └── documents/                  # Target directory for source PDFs (.gitkeep tracked)
-└── RAG system/
-    └── vectordb_creation.py        # PDF parsing, metadata tagging, chunking & vector indexing
+├── rag_system/
+│   ├── vectordb_creation.py        # PDF parsing, metadata tagging, chunking & vector indexing
+│   └── rag_retrieval_pipeline.py   # Vector retrieval, reranking & grounded QA pipeline
+└── rag_evaluation/                 # [Upcoming Release] RAGAS benchmarks & evaluation suites
 ```
 
 ---
@@ -167,7 +172,7 @@ This downloads all 8 PDF publications (~90 MB) into `docs/documents/`.
 
 Process and index the aerospace documents into ChromaDB:
 ```bash
-python "RAG system/vectordb_creation.py"
+python rag_system/vectordb_creation.py
 ```
 
 The script will:
@@ -176,6 +181,15 @@ The script will:
 3. Enrich pages with domain metadata (`agency`, `mission`, `category`).
 4. Chunk text with `RecursiveCharacterTextSplitter`.
 5. Batch embed vectors using Google's embedding model into `chroma_db/`.
+
+---
+
+### 3. Run the Retrieval Pipeline
+
+Query the indexed aerospace corpus via the interactive terminal interface:
+```bash
+python rag_system/rag_retrieval_pipeline.py
+```
 
 ---
 
@@ -190,6 +204,19 @@ The documents contain **~760 pages**, generating thousands of text chunks.
 
 * **Alternative (Zero-Cost, Unlimited Local Embeddings)**:
   If you prefer not to wait for Google's daily quota reset, switch the embedder in `vectordb_creation.py` to a local model (e.g., `sentence-transformers/all-MiniLM-L6-v2` or `BAAI/bge-small-en-v1.5`). You can still use Google Gemini or Groq as your generation LLM.
+
+---
+
+## 📊 RAG Evaluation (Upcoming)
+
+> [!NOTE]
+> **Work in Progress / Coming Soon**:
+> Formal evaluation of the retrieval and generation pipeline will be released in coming updates. The upcoming evaluation framework includes:
+> - **Metrics**: Quantitative tracking of `context_precision`, `context_recall`, `faithfulness`, and `answer_relevancy` using the [Ragas](https://github.com/explodinggradients/ragas) framework.
+> - **Aerospace Benchmark Dataset**: Curated ground-truth test queries covering Apollo 11, Apollo 13, and Challenger STS 51-L anomaly investigations, cross-mission reasoning, and out-of-domain negative controls.
+> - **Comparative Benchmarking**: Comparative analysis between standard vector retrieval, reranked retrieval (Flashrank), and hybrid retrieval architectures.
+> 
+> *Full evaluation scripts, configuration instructions, and benchmark evaluation reports will be officially published here in coming times.*
 
 ---
 
