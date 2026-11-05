@@ -39,10 +39,12 @@ print(f"Connected to ChromaDB! Total indexed chunks: {doc_count}")
 # 3. Create retriever with standard similarity search (no threshold dropping)
 base_retriever = vectorstore.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 6}
+    search_kwargs={
+        "k": 15, 
+    }
 )
 
-compressor = FlashrankRerank(client=Ranker(cache_dir=tempfile.gettempdir()), top_n=3)
+compressor = FlashrankRerank(client=Ranker(cache_dir=tempfile.gettempdir()), top_n=8)
 retriever = ContextualCompressionRetriever(
     base_compressor=compressor,
     base_retriever=base_retriever

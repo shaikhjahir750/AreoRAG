@@ -10,8 +10,8 @@ import langchain_google_vertexai
 sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(current_dir, "rag_hybrid_generation_output.json")
-OUTPUT_CSV = os.path.join(current_dir, "rag_hybrid_evaluation_report.csv")
+INPUT_FILE = os.path.join(current_dir, "rag_generation_output.json")
+OUTPUT_CSV = os.path.join(current_dir, "rag_evaluation_report.csv")
 
 from datasets import Dataset
 from ragas import evaluate

@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 from flashrank import Ranker
 from langchain_community.document_compressors import FlashrankRerank
-from langchain_classic.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers import ContextualCompressionRetriever, EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
@@ -19,7 +19,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_classic.retrievers import EnsembleRetriever
 
 PERSIST_DIR = "chroma_db"
 COLLECTION_NAME = "aerospace_mission_intel"
@@ -47,7 +46,7 @@ print(f"Connected to ChromaDB! Total indexed chunks: {doc_count}")
 # 3. Dense Retriever (Semantic Vector Search)
 dense_retriever = vectorstore.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 6}
+    search_kwargs={"k": 15}
 )
 
 # 4. Sparse Retriever (BM25 Keyword Search)
@@ -62,7 +61,7 @@ all_docs = [
 ]
 
 bm25_retriever = BM25Retriever.from_documents(all_docs)
-bm25_retriever.k = 6
+bm25_retriever.k = 10
 
 # 5. Hybrid Ensemble Retriever (RRF blending: 50% dense, 50% sparse)
 ensemble_retriever = EnsembleRetriever(
@@ -73,7 +72,7 @@ ensemble_retriever = EnsembleRetriever(
 # 6. Reranking Layer (FlashRank applied on top of the ensemble results)
 compressor = FlashrankRerank(
     client=Ranker(cache_dir=tempfile.gettempdir()),
-    top_n=3
+    top_n=5
 )
 
 retriever = ContextualCompressionRetriever(

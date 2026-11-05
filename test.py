@@ -30,7 +30,7 @@
 # collection = client.get_collection(name=COLLECTION_NAME)
 
 # # Check existing chunks for this specific file
-# target_file = "nasa_systems_engineering_handbook.pdf"
+# target_file = "nasa_challenger_rogers_commission.pdf"
 # results = collection.get(where={"file_name": target_file})
 # found_ids = results.get("ids", [])
 
@@ -44,7 +44,7 @@
 #     all_data = collection.get()
 #     matching_ids = [
 #         _id for _id in all_data.get("ids", [])
-#         if "nasa_systems_engineering_handbook" in _id
+#         if "nasa_challenger_rogers_commission" in _id
 #     ]
 #     if matching_ids:
 #         collection.delete(ids=matching_ids)

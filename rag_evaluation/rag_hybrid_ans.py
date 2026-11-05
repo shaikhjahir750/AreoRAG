@@ -25,138 +25,137 @@ os.chdir(root_dir)
 
 from rag_retrieval_pipeline2 import retriever, rag_chain
 
-EVAL_DATA = [
-    # --- Apollo 13 Review (Cortright Report) [7 Questions] ---
+EVAL_DATA =  [
+    # ---------------- Apollo 11 ----------------
+    {
+        "question": "Who were the three crew members of Apollo 11 and what were their roles?",
+        "ground_truth": "Neil A. Armstrong was the Commander, Michael Collins was the Command Module Pilot, and Edwin E. Aldrin, Jr. was the Lunar Module Pilot."
+    },
+    {
+        "question": "When and from where was Apollo 11 launched?",
+        "ground_truth": "Apollo 11 was launched from Kennedy Space Center, Florida, at 8:32:00 a.m. EST on July 16, 1969."
+    },
+    {
+        "question": "How many midcourse corrections were needed during the Apollo 11 translunar coast, and when was it performed?",
+        "ground_truth": "Only one midcourse correction was required, performed at approximately 27 hours ground elapsed time."
+    },
+    {
+        "question": "How did the actual Apollo 11 landing point compare with the planned landing point?",
+        "ground_truth": "The actual landing point in the Sea of Tranquility was latitude 0 deg 41'15\" N, longitude 23 deg 26' E, compared with the planned point of latitude 0 deg 43'53\" N, longitude 23 deg 38'51\" E."
+    },
+    {
+        "question": "Which computer alarms occurred during Apollo 11 powered descent, and how did the crew respond when the automatic descent was heading toward a boulder field?",
+        "ground_truth": "1201 and 1202 alarms occurred during powered descent. Because the automatic descent would have ended in a boulder field near a large sharp-rimmed crater, the crew assumed manual control, extended the range, and used the rate-of-descent throttle control mode (program P66)."
+    },
+    {
+        "question": "Which scientific experiments did the Apollo 11 crew deploy on the lunar surface, and how much lunar material did they collect?",
+        "ground_truth": "The crew deployed a solar wind experiment, a passive seismic experiment, and a laser retroreflector, and collected approximately 47 pounds of lunar surface material."
+    },
+    {
+        "question": "What quarantine procedures were followed after Apollo 11 splashdown, and when were the crew released?",
+        "ground_truth": "After recovery by helicopter to the U.S.S. Hornet, the crew and lunar samples were placed in the Mobile Quarantine Facility, then transported to the Lunar Receiving Laboratory in Houston. The crew and spacecraft were released from quarantine on August 10, 1969."
+    },
+ 
+    # ---------------- Apollo 13 ----------------
+    {
+        "question": "Who chaired the Apollo 13 Review Board and when was the final report transmitted?",
+        "ground_truth": "Edgar M. Cortright chaired the Apollo 13 Review Board, and the final report was transmitted to NASA Administrator Thomas O. Paine on June 15, 1970."
+    },
     {
         "question": "What primary mechanical event caused the failure of Oxygen Tank No. 2 in the Apollo 13 Service Module?",
-        "ground_truth": "Combustion or electrical arcing within Oxygen Tank No. 2 ignited Teflon insulation on the wiring, causing rapid pressure buildup, structural failure of the tank, and blow-off of the outer SM panel."
+        "ground_truth": "A combustion process within oxygen tank no. 2, involving ignition of Teflon wire insulation, caused rapid pressure and temperature rise. This led to failure of the tank closure or conduit, pressurization of the tank dome and rupture of its disc, releasing oxygen and combustion products into bay 4 of the service module, whose panel was missing after the accident."
     },
     {
-        "question": "Why did the heater thermostatic switches fail during the pre-flight detanking of Apollo 13?",
-        "ground_truth": "Heater switch contacts were rated for 28V DC but subjected to 65V DC ground power at KSC, causing contacts to weld shut and overheat the tank wiring."
+        "question": "At what mission time did the Apollo 13 incident begin, and what did the data show happened in oxygen tank no. 2?",
+        "ground_truth": "The incident began at about 55 hours 52 minutes ground elapsed time. Oxygen tank no. 2 pressure and temperature rose, pointing to a combustion process, with pressure peaking at about 1008 psia."
     },
     {
-        "question": "What role did the Lunar Module 'Aquarius' play immediately following the oxygen tank rupture?",
-        "ground_truth": "Aquarius served as a lifeboat, providing life support, electrical power, and propulsion via the DPS while the Command Module was powered down."
+        "question": "Why was John Swigert on the Apollo 13 prime crew instead of Thomas Mattingly?",
+        "ground_truth": "Backup Lunar Module Pilot Charles Duke contracted rubella in the week before launch. Tests showed Lovell and Haise were immune but Command Module Pilot Thomas Mattingly was not, so backup Command Module Pilot John Swigert was substituted after two days of simulator training."
     },
     {
-        "question": "What peak temperature did the internal heater tube in Oxygen Tank No. 2 reach during ground detanking?",
-        "ground_truth": "Internal heater tube temperatures reached approximately 1000°F (540°C) due to continuous current through welded switches."
+        "question": "What were the primary mission objectives of Apollo 13?",
+        "ground_truth": "To perform selenological inspection, survey, and sampling of the Fra Mauro Formation; deploy and activate an Apollo Lunar Surface Experiments Package (ALSEP); develop man's capability to work in the lunar environment; and photograph candidate exploration sites."
     },
     {
-        "question": "How did the handling incident at North American Rockwell contribute to the Apollo 13 tank failure?",
-        "ground_truth": "The oxygen shelf assembly dropped two inches during removal from Apollo 10, loosening internal fill line plumbing."
+        "question": "Why was the lunar module used as a 'lifeboat' on Apollo 13 and by when was it activated?",
+        "ground_truth": "The oxygen tank no. 1 leak could not be stopped, so the LM had to serve as a lifeboat. By 58:40 ground elapsed time the LM was activated, inertial guidance reference was transferred to the LM guidance system, and the CSM systems were turned off."
     },
     {
-        "question": "What redesign recommendations were made by the Cortright Commission for the CSM oxygen system?",
-        "ground_truth": "Remove internal heater and fan motors, isolate wiring from high-pressure oxygen, add a third auxiliary oxygen tank, and install an emergency battery."
+        "question": "Which consumables became critical on Apollo 13 after the accident, and what improved the situation?",
+        "ground_truth": "Water, electrical power (batteries), oxygen, and lithium hydroxide canisters for carbon dioxide removal were marginal. Powering down the LM to conserve electric power and reduce heat and water use greatly improved the situation."
+    },
+ 
+    # ---------------- Challenger ----------------
+    {
+        "question": "When did Challenger Mission 51-L launch and how long did the flight last?",
+        "ground_truth": "Mission 51-L launched at 11:38 a.m. EST on January 28, 1986, and ended 73 seconds later in an explosive burn of hydrogen and oxygen propellants that destroyed the External Tank and exposed the Orbiter to severe aerodynamic loads."
     },
     {
-        "question": "How did the Apollo 13 crew resolve toxic CO2 buildup inside the Lunar Module?",
-        "ground_truth": "They adapted square CM lithium hydroxide canisters to the round LM sockets using plastic bags, cardboard, and tape (the mailbox)."
-    },
-
-    # --- Challenger STS 51-L (Rogers Commission Report) [7 Questions] ---
-    {
-        "question": "What was the direct physical cause of the Challenger STS 51-L launch failure?",
-        "ground_truth": "Failure of the primary and secondary O-ring seals in the right SRB aft field joint allowed combustion gases to escape and impinge on the External Tank."
+        "question": "Who were the seven crew members lost on Challenger?",
+        "ground_truth": "Francis R. (Dick) Scobee (Commander), Michael J. Smith (Pilot), Ellison S. Onizuka, Judith A. Resnik, and Ronald E. McNair (Mission Specialists), and S. Christa McAuliffe and Gregory B. Jarvis (Payload Specialists)."
     },
     {
-        "question": "How did cold ambient temperatures impair SRB O-ring functionality?",
-        "ground_truth": "Cold temperatures increased Viton rubber hardness and delayed seal resiliency, preventing proper sealing of the joint during ignition pressure."
+        "question": "What was the ambient temperature at the Challenger launch and how did it compare with earlier launches?",
+        "ground_truth": "The ambient temperature at launch was 36 degrees Fahrenheit, which was 15 degrees lower than the next coldest previous launch."
     },
     {
-        "question": "What objection did Morton Thiokol engineers raise the evening prior to STS 51-L launch?",
-        "ground_truth": "Engineers recommended not launching below 53°F due to historical correlation between low temperature and O-ring erosion."
+        "question": "Where did the leak that caused the Challenger accident originate, and what features of the joint were involved?",
+        "ground_truth": "The combustion gas leak originated in the right Solid Rocket Motor aft field joint. The motor case sections are joined by tang-and-clevis joints held by 177 steel pins, sealed with primary and secondary O-rings and protected by zinc chromate putty."
     },
     {
-        "question": "How did NASA management treat prior O-ring erosion issues before STS 51-L?",
-        "ground_truth": "NASA management normalized the deviance, treating recurring O-ring erosion as an acceptable flight risk rather than a Criticality 1 hazard."
+        "question": "Which Morton Thiokol engineers objected to the Challenger launch and what was Thiokol's initial recommendation?",
+        "ground_truth": "Roger Boisjoly and Arnold Thompson voiced strong objections. Thiokol's initial recommendation, from Bob Lund, was not to launch until the O-ring temperature reached 53 degrees Fahrenheit, the lowest temperature of any previous flight."
     },
     {
-        "question": "What demonstration did Richard Feynman conduct during the Rogers Commission hearings?",
-        "ground_truth": "He submerged a compressed O-ring material sample in ice water to demonstrate its loss of elasticity at near-freezing temperatures."
+        "question": "What role did Lawrence Mulloy and the launch constraint waivers play in the Challenger accident?",
+        "ground_truth": "Lawrence Mulloy, the Solid Rocket Booster Project Manager at Marshall, regularly waived the launch constraint related to the O-ring problem, including six consecutive waivers before 51-L. Neither the constraint, its reason, nor the waivers were known to Level I or Level II management."
     },
     {
-        "question": "What modifications were made to the SRB field joint following the Rogers Commission?",
-        "ground_truth": "The joint was redesigned with a capture feature metal lip to prevent rotation and installed electric heater bands to maintain seal temperatures at or above 75°F."
+        "question": "What happened during Morton Thiokol's internal caucus before reversing its recommendation not to launch?",
+        "ground_truth": "About ten engineers participated along with managers including Mason, Kilminster, Wiggins and Lund. Boisjoly and Thompson objected strongly, but a senior manager asked Bob Lund to take off his engineering hat and put on his management hat, after which management formulated the points on which to base a decision to launch."
+    },
+ 
+    # ---------------- Cross-document ----------------
+    {
+        "question": "who apprears in both Apollo 11 and Rogers Commission in what role?",
+        "ground_truth": "Neil A. Armstrong was Commander of Apollo 11 and later served as Vice Chairman of the Presidential Commission on the Space Shuttle Challenger Accident."
     },
     {
-        "question": "What role did zinc chromate putty play in the SRB field joint leakage?",
-        "ground_truth": "Displacement of putty during joint assembly created air pockets/blowholes that focused high-pressure combustion jets directly onto the O-rings."
-    },
-
-    # --- Apollo 11 Mission Report [7 Questions] ---
-    {
-        "question": "What caused the 1201 and 1202 program alarms on the Apollo 11 Lunar Module guidance computer?",
-        "ground_truth": "Executive overflow alarms caused by the Apollo Guidance Computer being overloaded with radar cycle calculations."
+        "question": "How did temperature play a role in the Apollo 13 and Challenger accident?",
+        "ground_truth": "In Apollo 13, pressure and temperature rose inside oxygen tank no. 2 as a result of a combustion process. In Challenger, low ambient temperature (36 degrees F) reduced O-ring resiliency and sealing capability in the right aft field joint, allowing hot gas to leak."
     },
     {
-        "question": "What hardware switch position triggered the AGC computer overload during lunar descent?",
-        "ground_truth": "The rendezvous radar switch was set to AUTO rather than SLEW, feeding continuous unnecessary pulse interrupts into the processor."
+        "question": " Which of Apollo 13 and Challenger involved a last-minute crew change?",
+        "ground_truth": "Apollo 13 replaced Command Module Pilot Mattingly with backup Swigert because of rubella exposure. On Challenger, the crew was not told of any concern about the effects of low temperature on the Shuttle system."
     },
     {
-        "question": "Why did Neil Armstrong switch to semi-automatic manual control (P66) during descent?",
-        "ground_truth": "The automatic guidance path was directing the spacecraft toward a boulder-filled crater field around West Crater."
+        "question": "Did the Apollo 13 incident occur before or after Apollo 11?",
+        "ground_truth": "Before. The Apollo 13 incident began at about 55 hours 52 minutes GET, whereas Apollo 11 was inserted into lunar orbit at approximately 76 hours GET."
     },
     {
-        "question": "How much descent propellant remained when Apollo 11 touched down?",
-        "ground_truth": "Approximately 25 to 45 seconds of usable descent engine fuel remained before the abort limit."
+        "question": "describe the use of lithium hydroxide in Apollo 11 and Apollo 13?",
+        "ground_truth": "In Apollo 11, particles from cabin cleaning were collected in the lithium hydroxide filters of the environmental control system. In Apollo 13, lithium hydroxide canisters for removing carbon dioxide were a marginal consumable after the accident until the LM was powered down."
+    },
+ 
+    # ---------------- Out-of-scope / false-premise ----------------
+    {
+        "question": "What was the cause of the Columbia accident in 2003?",
+        "ground_truth": "This is not covered in the provided documents (Apollo 11, Apollo 13, and Challenger reports). The system should state that it cannot answer from the available context."
     },
     {
-        "question": "What scientific instruments comprised the Apollo 11 EASEP package?",
-        "ground_truth": "The Passive Seismic Experiment Package (PSEP) and the Laser Ranging Retro-Reflector (LRRR)."
+        "question": "What is the current status of NASA's Artemis program?",
+        "ground_truth": "This is not covered in the provided documents. The system should state that the documents do not contain information about the Artemis program."
     },
     {
-        "question": "How did Aldrin activate the broken ascent engine circuit breaker before lunar liftoff?",
-        "ground_truth": "He pushed the broken circuit breaker switch in using a felt-tip marker pen."
+        "question": "Why did the Apollo 11 descent engine fail during landing?",
+        "ground_truth": "False premise. The Apollo 11 report does not describe a descent engine failure; it describes 1201/1202 computer alarms and a manual takeover to avoid a boulder field. The system should correct the premise."
     },
     {
-        "question": "What quarantine protocol was applied to the Apollo 11 crew after splashdown?",
-        "ground_truth": "The crew wore biological isolation garments, were scrubbed with Betadine, entered a Mobile Quarantine Facility, and completed 21 days of isolation."
+        "question": "What did the Apollo 13 Review Board conclude about the Challenger explosion?",
+        "ground_truth": "False premise. The Apollo 13 Review Board reported in 1970, years before the 1986 Challenger accident, and could not have drawn conclusions about it. The system should say this cannot be answered."
     },
-
-    # --- Cross-Document Reasoning & Synthesis [6 Questions] ---
-    {
-        "question": "Compare the operational role of the Lunar Module in Apollo 11 versus Apollo 13.",
-        "ground_truth": "In Apollo 11, the LM was strictly an exploration craft for two crew members to descend to the Moon. In Apollo 13, it served as an emergency lifeboat for three astronauts across four days."
-    },
-    {
-        "question": "Contrast the pre-launch systemic failures of Apollo 13 and Challenger STS 51-L.",
-        "ground_truth": "Apollo 13 resulted from unverified electrical modifications and ground tank damage. Challenger resulted from management launching outside verified temperature limits despite contractor warnings."
-    },
-    {
-        "question": "How did onboard telemetry warnings differ between Apollo 11 and Apollo 13?",
-        "ground_truth": "Apollo 11 had AGC cycle duty overflow alarms (1201/1202) while vehicle systems functioned normally. Apollo 13 triggered master alarms from sudden bus voltage and tank pressure losses."
-    },
-    {
-        "question": "How did hardware redesigns after Apollo 13 and Challenger address the root causes of seal and tank integrity?",
-        "ground_truth": "Apollo 13 eliminated internal wiring, fans, and heaters from high-pressure oxygen environments, while Challenger added a mechanical capture lip and joint heaters to preserve O-ring seal resiliency."
-    },
-    {
-        "question": "Compare how manual improvisations by crew or engineers overcame mechanical failures in Apollo 11 versus Apollo 13.",
-        "ground_truth": "Apollo 11 used a felt-tip marker to engage a broken ascent engine circuit breaker, while Apollo 13 improvised a CO2 scrubber adapter using cardboard, plastic bags, and tape."
-    },
-    {
-        "question": "How did ground testing decisions prior to launch directly compromise flight safety in both Apollo 13 and STS 51-L?",
-        "ground_truth": "In Apollo 13, running high-voltage ground detanking welded the heater switches and scorched internal wiring. In Challenger, NASA disregarded prior cold-soak launch data and test erosion trends despite contractor warnings."
-    },
-
-    # --- Out-of-Domain Negative Controls (Faithfulness Checks) [3 Questions] ---
-    {
-        "question": "What caused the thermal protection tile damage on Space Shuttle Columbia STS-107?",
-        "ground_truth": "The provided documents contain no information regarding Space Shuttle Columbia or mission STS-107."
-    },
-    {
-        "question": "What were the launch date, crew, and landing site of the Apollo 12 mission?",
-        "ground_truth": "The provided documents do not contain information regarding the Apollo 12 mission flight details."
-    },
-    {
-        "question": "Who was the Soviet mission commander during the Apollo-Soyuz Test Project?",
-        "ground_truth": "The provided context contains no records regarding the Soviet Union or the Apollo-Soyuz Test Project."
-    }
 ]
-
 
 OUTPUT_FILE = os.path.join(current_dir, "rag_hybrid_generation_output.json")
 
