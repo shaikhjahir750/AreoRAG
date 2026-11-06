@@ -8,7 +8,7 @@
 [![Evaluation](https://img.shields.io/badge/Evaluation-Ragas%20Benchmarked-teal)](rag_evaluation/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 
-**AreoRAG** is an aerospace domain-specific Retrieval-Augmented Generation (RAG) platform. It indexes and interrogates technical mission reports, anomaly investigations, flight handbooks, and mission booklets from **NASA** and **ISRO** to provide accurate, grounded technical answers with complete source attribution.
+**AreoRAG** is an aerospace domain-specific Retrieval-Augmented Generation (RAG) platform. It indexes and interrogates landmark technical mission reports and failure investigations from **NASA** — specifically **Apollo 11**, **Apollo 13**, and the **Rogers Commission Report on the Challenger Space Shuttle Disaster** — to provide accurate, grounded technical answers with complete source attribution.
 
 ---
 
@@ -39,12 +39,12 @@
 
 ## 🏛️ Overview & Architecture
 
-AreoRAG combines document extraction, structured metadata tagging, semantic chunking, dual retrieval strategies (Dense Semantic Vector Search and Hybrid Dense + BM25 Sparse Search), and cross-encoder reranking to enable high-accuracy querying across historical and modern space missions.
+AreoRAG combines document extraction, structured metadata tagging, semantic chunking, dual retrieval strategies (Dense Semantic Vector Search and Hybrid Dense + BM25 Sparse Search), and cross-encoder reranking to enable high-accuracy querying across historical mission reports.
 
 ```mermaid
 flowchart TD
     subgraph Data_Ingestion ["1. Document Ingestion Pipeline"]
-        PDFs["NASA & ISRO PDFs (docs/documents)"] --> Loader["PyPDFLoader"]
+        PDFs["NASA Technical Reports (docs/documents)"] --> Loader["PyPDFLoader"]
         Loader --> Meta["Metadata Enrichment (Agency, Mission, Category)"]
         Meta --> Chunker["RecursiveCharacterTextSplitter (1000 chars / 200 overlap)"]
         Chunker --> Embedder["Embedding Model (gemini-embedding-001)"]
@@ -78,24 +78,21 @@ flowchart TD
 
 ## 📚 Indexed Mission Corpus
 
-AreoRAG curates technical aerospace literature across two major space agencies:
+AreoRAG curates landmark technical aerospace literature from **NASA** spanning lunar landing operations and critical failure investigations:
 
 | Document | Agency | Pages | Mission / Domain | Key Focus |
 | :--- | :--- | :---: | :--- | :--- |
-| `nasa_apollo11_mission_report.pdf` | **NASA** | 230 | Apollo 11 | Lunar landing mission analysis, trajectory, flight timeline |
-| `nasa_apollo13_review.pdf` | **NASA** | 208 | Apollo 13 | Service module oxygen tank rupture & anomaly investigation |
-| `nasa_challenger_rogers_commission.pdf` | **NASA** | 261 | Challenger STS 51-L | Rogers Commission presidential report on O-ring failure |
-| `nasa_systems_engineering_handbook.pdf` | **NASA** | 14 | NASA Standards | Systems engineering fundamentals, verification & validation |
-| `isro_chandrayaan1_publication.pdf` | **ISRO** | 8 | Chandrayaan-1 | Lunar orbit insertion, payloads, and lunar water discovery |
-| `isro_aditya_l1_booklet.pdf` | **ISRO** | 14 | Aditya-L1 | Solar coronagraphy, heliophysics, Lagrange Point 1 science |
-| `isro_gaganyaan_tvd1.pdf` | **ISRO** | 12 | Gaganyaan TV-D1 | In-flight abort demonstration & crew module escape test |
-| `isro_space_achievements_tech.pdf` | **ISRO** | 13 | ISRO Overview | Launch vehicle architectures (PSLV, GSLV, LVM3) and telemetry |
+| `nasa_apollo11_mission_report.pdf` | **NASA** | 230 | Apollo 11 | Lunar landing mission analysis, descent timeline, AGC program alarms (1201/1202), and surface telemetry |
+| `nasa_apollo13_review.pdf` | **NASA** | 208 | Apollo 13 | Service module oxygen tank rupture, pre-flight detanking electrical arcing, and Cortright Board review |
+| `nasa_challenger_rogers_commission.pdf` | **NASA** | 261 | Challenger STS 51-L | Rogers Commission presidential investigation on right SRB field joint O-ring failure, cold temperatures, and launch risk decisions |
+
+> Total: **699 pages** of dense technical aerospace documentation, yielding **~1,943 text chunks** in ChromaDB.
 
 ---
 
 ## ✨ Key Features
 
-- **Multi-Agency Metadata Tagging**: Chunks are enriched with `agency`, `mission`, `category`, and `file_name` for targeted filtering (e.g., query *only* Apollo anomaly reports or *only* ISRO crew safety tests).
+- **Mission & Incident Metadata Tagging**: Chunks are enriched with `agency`, `mission`, `category`, and `file_name` for targeted filtering across Apollo and Space Shuttle incident archives.
 - **Dual Retrieval Architectures**:
   - **Dense + Rerank**: Deep semantic similarity via ChromaDB coupled with FlashRank contextual reranking.
   - **Hybrid Ensemble (RRF)**: Blended reciprocal rank fusion combining dense embeddings (70%) and lexical BM25 keyword matching (30%), filtered through cross-encoder reranking.
@@ -115,7 +112,7 @@ AreoRAG/
 ├── requirements.txt                           # Project dependencies
 ├── README.md                                  # Documentation & evaluation benchmarks
 ├── docs/
-│   ├── document_download_script.py            # Automated downloader for NASA/ISRO PDFs
+│   ├── document_download_script.py            # Automated downloader for NASA source PDFs
 │   └── documents/                             # Target directory for source PDFs (.gitkeep tracked)
 ├── rag_system/
 │   ├── vectordb_creation.py                   # Parsing, metadata tagging, chunking & vector indexing
@@ -185,11 +182,11 @@ GROQ_API_KEY="your_groq_api_key_here"
 
 ### 1. Download Source Documents
 
-Fetch all NASA and ISRO technical documents:
+Fetch the NASA technical mission documents:
 ```bash
 python docs/document_download_script.py
 ```
-This downloads all 8 PDF publications (~90 MB) into `docs/documents/`.
+This downloads the source mission PDFs (~46 MB) into `docs/documents/`.
 
 ---
 
@@ -293,7 +290,7 @@ Four standardized RAG metrics were measured:
 
 ## ⚡ Important: Handling Embedding Rate Limits
 
-The documents contain **~760 pages**, generating thousands of text chunks. 
+The 3 indexed mission documents comprise **~700 pages** (generating 1,943 text chunks in ChromaDB). 
 
 * **Google AI Studio Free Tier**:
   - Limit: ~15 Requests Per Minute (RPM) and a daily quota of 1,500 requests/day.
@@ -322,4 +319,4 @@ If you manage this repository with **GitHub Desktop**:
 
 ## 📜 License
 
-This project is licensed under the MIT License. Mission reports and public publications are sourced from open-access repositories provided by NASA and ISRO.
+This project is licensed under the MIT License. Mission reports and public publications are sourced from open-access technical repositories provided by NASA (NTRS).
