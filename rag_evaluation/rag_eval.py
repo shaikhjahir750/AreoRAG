@@ -10,8 +10,8 @@ import langchain_google_vertexai
 sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(current_dir, "rag_generation_output.json")
-OUTPUT_CSV = os.path.join(current_dir, "rag_evaluation_report.csv")
+INPUT_FILE = os.path.join(current_dir, "rag_generation_output2.json")
+OUTPUT_CSV = os.path.join(current_dir, "rag_evaluation_report2.csv")
 
 from datasets import Dataset
 from ragas import evaluate
@@ -26,6 +26,7 @@ from ragas.metrics import (
 )
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 
+answer_relevancy.strictness = 1 
 # Evaluator Setup
 evaluator_llm = LangchainLLMWrapper(
     ChatGoogleGenerativeAI(model="gemini-flash-lite-latest", temperature=0.0)
@@ -51,11 +52,14 @@ def run_evaluation():
     }
     dataset = Dataset.from_dict(dataset_dict)
 
+
     print(f"Running RAGAS evaluation on {len(dataset)} samples...")
 
     run_config = RunConfig(
-        timeout=120,
-        max_workers=2
+        timeout=240,
+        max_workers=1,
+        max_retries=10,
+        max_wait=60
     )
 
     results = evaluate(

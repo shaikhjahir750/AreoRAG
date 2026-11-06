@@ -117,27 +117,27 @@ EVAL_DATA = [
     },
  
     # ---------------- Cross-document ----------------
+   
     {
-        "question": "who apprears in both Apollo 11 and Rogers Commission in what role?",
-        "ground_truth": "Neil A. Armstrong was Commander of Apollo 11 and later served as Vice Chairman of the Presidential Commission on the Space Shuttle Challenger Accident."
+        "question": "Who appears in both Apollo 11 and Rogers Commission in what role?",
+        "ground_truth": "Neil A. Armstrong served as the Commander of Apollo 11 (the first manned lunar landing) and later served as the Vice Chairman of the Presidential Commission on the Space Shuttle Challenger Accident (the Rogers Commission)."
     },
     {
         "question": "How did temperature play a role in the Apollo 13 and Challenger accident?",
-        "ground_truth": "In Apollo 13, pressure and temperature rose inside oxygen tank no. 2 as a result of a combustion process. In Challenger, low ambient temperature (36 degrees F) reduced O-ring resiliency and sealing capability in the right aft field joint, allowing hot gas to leak."
+        "ground_truth": "In Challenger, cold ambient temperatures at launch (36°F) caused severe O-ring resiliency degradation and loss of sealing capability in the right Solid Rocket Motor aft field joint, resulting in hot gas blow-by. In Apollo 13, abnormally high temperatures during pre-flight detanking caused thermostatic switches to fail and weld closed, allowing heater temperatures to reach approximately 1000°F and bake off wire insulation, which eventually triggered the oxygen tank combustion."
     },
     {
-        "question": " Which of Apollo 13 and Challenger involved a last-minute crew change?",
-        "ground_truth": "Apollo 13 replaced Command Module Pilot Mattingly with backup Swigert because of rubella exposure. On Challenger, the crew was not told of any concern about the effects of low temperature on the Shuttle system."
+        "question": "Which of Apollo 13 and Challenger involved a last-minute crew change?",
+        "ground_truth": "Apollo 13 involved a last-minute crew change when backup Command Module Pilot John L. Swigert, Jr., replaced prime CMP Thomas K. Mattingly III just days prior to launch due to rubella exposure. Challenger had no last-minute crew change."
     },
     {
         "question": "Did the Apollo 13 incident occur before or after Apollo 11?",
-        "ground_truth": "Before. The Apollo 13 incident began at about 55 hours 52 minutes GET, whereas Apollo 11 was inserted into lunar orbit at approximately 76 hours GET."
+        "ground_truth": "After. Apollo 11 took place in July 1969, while the Apollo 13 mission and oxygen tank explosion occurred nine months later in April 1970."
     },
     {
-        "question": "describe the use of lithium hydroxide in Apollo 11 and Apollo 13?",
-        "ground_truth": "In Apollo 11, particles from cabin cleaning were collected in the lithium hydroxide filters of the environmental control system. In Apollo 13, lithium hydroxide canisters for removing carbon dioxide were a marginal consumable after the accident until the LM was powered down."
+        "question": "Describe the use of lithium hydroxide in Apollo 11 and Apollo 13?",
+        "ground_truth": "In Apollo 11, lithium hydroxide filters in the environmental control system were used during cabin cleanup to capture abrasive airborne lunar dust after surface EVAs. In Apollo 13, lithium hydroxide canisters were critical consumables used to scrub carbon dioxide from the atmosphere; after the accident, ground controllers devised a procedure using spacesuit hoses, cue cards, and plastic bags to adapt square Command Module LiOH canisters for use in the Lunar Module's cylindrical system."
     },
- 
     # ---------------- Out-of-scope / false-premise ----------------
     {
         "question": "What was the cause of the Columbia accident in 2003?",
@@ -159,7 +159,7 @@ EVAL_DATA = [
 
 
 
-OUTPUT_FILE = os.path.join(current_dir, "rag_generation_output.json")
+OUTPUT_FILE = os.path.join(current_dir, "rag_generation_output2.json")
 
 
 def generate_and_save():

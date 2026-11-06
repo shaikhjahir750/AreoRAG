@@ -3,7 +3,9 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20%7C%20LangGraph-orange)](https://www.langchain.com/)
 [![VectorDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)](https://www.trychroma.com/)
+[![Reranker](https://img.shields.io/badge/Reranker-FlashRank-red)](https://github.com/PrithivirajDamodaran/FlashRank)
 [![LLM Support](https://img.shields.io/badge/LLM-Google%20Gemini%20%7C%20Groq-green)](https://groq.com/)
+[![Evaluation](https://img.shields.io/badge/Evaluation-Ragas%20Benchmarked-teal)](rag_evaluation/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 
 **AreoRAG** is an aerospace domain-specific Retrieval-Augmented Generation (RAG) platform. It indexes and interrogates technical mission reports, anomaly investigations, flight handbooks, and mission booklets from **NASA** and **ISRO** to provide accurate, grounded technical answers with complete source attribution.
@@ -23,9 +25,13 @@
 - [Usage Workflow](#-usage-workflow)
   - [1. Download Source Documents](#1-download-source-documents)
   - [2. Build the Chroma Vector Database](#2-build-the-chroma-vector-database)
-  - [3. Run the Retrieval Pipeline](#3-run-the-retrieval-pipeline)
+  - [3. Run the Retrieval & QA Pipeline](#3-run-the-retrieval--qa-pipeline)
+  - [4. Run the Evaluation Suite](#4-run-the-evaluation-suite)
 - [Important: Handling Embedding Rate Limits](#-important-handling-embedding-rate-limits)
-- [RAG Evaluation (Upcoming)](#-rag-evaluation-upcoming)
+- [📊 RAG Evaluation & Benchmark Results](#-rag-evaluation--benchmark-results)
+  - [Evaluation Methodology & Metrics](#evaluation-methodology--metrics)
+  - [Comparative Benchmark Results](#comparative-benchmark-results)
+  - [Key Insights & Performance Analysis](#key-insights--performance-analysis)
 - [GitHub Desktop Workflow](#-github-desktop-workflow)
 - [License](#-license)
 
@@ -33,7 +39,7 @@
 
 ## 🏛️ Overview & Architecture
 
-AreoRAG combines document extraction, structured metadata tagging, semantic chunking, and vector storage to enable high-accuracy querying across historical and modern space missions.
+AreoRAG combines document extraction, structured metadata tagging, semantic chunking, dual retrieval strategies (Dense Semantic Vector Search and Hybrid Dense + BM25 Sparse Search), and cross-encoder reranking to enable high-accuracy querying across historical and modern space missions.
 
 ```mermaid
 flowchart TD
@@ -41,19 +47,30 @@ flowchart TD
         PDFs["NASA & ISRO PDFs (docs/documents)"] --> Loader["PyPDFLoader"]
         Loader --> Meta["Metadata Enrichment (Agency, Mission, Category)"]
         Meta --> Chunker["RecursiveCharacterTextSplitter (1000 chars / 200 overlap)"]
-        Chunker --> Embedder["Embedding Model (Gemini / BGE)"]
+        Chunker --> Embedder["Embedding Model (gemini-embedding-001)"]
         Embedder --> VectorDB[("ChromaDB Vector Store (aerospace_mission_intel)")]
     end
 
-    subgraph Query_Pipeline ["2. Retrieval & Generation Pipeline"]
-        UserQuery["User Technical Query"] --> QueryEmbed["Query Embedder"]
-        QueryEmbed --> Search["Vector Search + Metadata Filter"]
-        VectorDB --> Search
-        Search --> Context["Retrieved Technical Chunks"]
-        Context --> Prompt["Grounded System Prompt"]
+    subgraph Retrieval_Strategies ["2. Dual Retrieval Strategies"]
+        direction TB
+        UserQuery["User Technical Query"] --> DenseRetriever["Dense Vector Search (k=12-20)"]
+        UserQuery --> SparseRetriever["Sparse BM25 Search (k=10)"]
+        DenseRetriever --> Ensemble["Ensemble Retriever (RRF 70% Dense / 30% BM25)"]
+        SparseRetriever --> Ensemble
+        Ensemble --> FlashRank["FlashRank Cross-Encoder Reranker (top_n=5-8)"]
+    end
+
+    subgraph Generation_Pipeline ["3. Grounded Generation & QA"]
+        FlashRank --> Context["Top Relevant Technical Chunks"]
+        Context --> Prompt["Grounded Expert Prompt"]
         UserQuery --> Prompt
-        Prompt --> LLM["LLM (Groq LLaMA 3.3 / Google Gemini)"]
-        LLM --> Response["Grounded Answer + Mission Citations"]
+        Prompt --> LLM["LLM (Google Gemini Flash / Groq LLaMA 3.3)"]
+        LLM --> Response["Grounded Answer + Citations (< 100 words)"]
+    end
+
+    subgraph Evaluation_Harness ["4. Ragas Evaluation Harness"]
+        Response --> Ragas["Ragas Evaluator (LLM-as-a-Judge)"]
+        Ragas --> Report["Benchmark Reports (CSV / JSON)"]
     end
 ```
 
@@ -79,11 +96,13 @@ AreoRAG curates technical aerospace literature across two major space agencies:
 ## ✨ Key Features
 
 - **Multi-Agency Metadata Tagging**: Chunks are enriched with `agency`, `mission`, `category`, and `file_name` for targeted filtering (e.g., query *only* Apollo anomaly reports or *only* ISRO crew safety tests).
-- **Quota-Aware Batch Ingestion**: Ingests in 15-chunk batches with explicit delays to respect API rate limits.
-- **Checkpointing & Deduplication**: Checks existing Chroma collections to prevent re-embedding already indexed files, saving API tokens.
-- **Dual LLM Provider Support**: Compatible with Google Gemini for native embeddings and Groq (LLaMA 3.3 70B) for ultra-fast response generation.
-- **Contextual Reranking**: Integrates Flashrank reranking to optimize precision across dense technical passages.
-- **Evaluation Framework (Coming Soon)**: Automated LLM-as-a-judge benchmarking using RAGAS and custom aerospace evaluation datasets is actively planned and will be introduced in coming updates.
+- **Dual Retrieval Architectures**:
+  - **Dense + Rerank**: Deep semantic similarity via ChromaDB coupled with FlashRank contextual reranking.
+  - **Hybrid Ensemble (RRF)**: Blended reciprocal rank fusion combining dense embeddings (70%) and lexical BM25 keyword matching (30%), filtered through cross-encoder reranking.
+- **Cross-Encoder Reranking**: Utilizes `flashrank` (`ms-marco-TinyBERT-L-2-v2`) to eliminate irrelevant chunks and prioritize exact technical answers.
+- **Strict Grounding & Hallucination Prevention**: Prompts enforce exact contextual grounding; unanswerable or out-of-domain queries fallback cleanly to `"I cannot find relevant information in the indexed mission documents."`
+- **Quota-Aware Batch Ingestion**: Ingests in configurable batches with sleep intervals to respect API limits (15 RPM).
+- **Full Ragas Evaluation Suite**: Pre-configured benchmark harness assessing `faithfulness`, `answer_relevancy`, `context_recall`, and `context_precision` on verified aerospace ground-truth datasets.
 
 ---
 
@@ -91,17 +110,23 @@ AreoRAG curates technical aerospace literature across two major space agencies:
 
 ```
 AreoRAG/
-├── .env.example                     # Sample template for API keys
-├── .gitignore                       # Configured for GitHub Desktop, venv, ChromaDB & PDFs
-├── requirements.txt                 # Project dependencies
-├── README.md                        # Project documentation
+├── .env.example                               # Template for API credentials
+├── .gitignore                                 # Excludes venv, ChromaDB & raw PDFs
+├── requirements.txt                           # Project dependencies
+├── README.md                                  # Documentation & evaluation benchmarks
 ├── docs/
-│   ├── document_download_script.py # Automated downloader for NASA/ISRO PDFs
-│   └── documents/                  # Target directory for source PDFs (.gitkeep tracked)
+│   ├── document_download_script.py            # Automated downloader for NASA/ISRO PDFs
+│   └── documents/                             # Target directory for source PDFs (.gitkeep tracked)
 ├── rag_system/
-│   ├── vectordb_creation.py        # PDF parsing, metadata tagging, chunking & vector indexing
-│   └── rag_retrieval_pipeline.py   # Vector retrieval, reranking & grounded QA pipeline
-└── rag_evaluation/                 # [Upcoming Release] RAGAS benchmarks & evaluation suites
+│   ├── vectordb_creation.py                   # Parsing, metadata tagging, chunking & vector indexing
+│   ├── rag_retrieval_pipeline.py              # Dense vector retrieval + FlashRank reranker pipeline
+│   └── rag_retrieval_pipeline2.py             # Hybrid (Dense + BM25) ensemble + FlashRank pipeline
+└── rag_evaluation/
+    ├── similarity_answer.py                   # Dense pipeline batch answer generation
+    ├── rag_hybrid_ans.py                      # Hybrid pipeline batch answer generation
+    ├── rag_eval.py                            # Ragas automated evaluation runner
+    ├── rag_evaluation_report.csv              # Dense + FlashRank evaluation metrics report
+    └── rag_hybrid_evaluation_report2.csv      # Hybrid + FlashRank evaluation metrics report
 ```
 
 ---
@@ -113,11 +138,11 @@ AreoRAG/
 - Python 3.10 or higher
 - [GitHub Desktop](https://desktop.github.com/) (or Git CLI)
 - A Google AI Studio API Key ([Get one here](https://aistudio.google.com/))
-- *(Optional)* A Groq Cloud API Key for ultra-fast generation ([Get one here](https://console.groq.com/))
+- *(Optional)* A Groq Cloud API Key ([Get one here](https://console.groq.com/))
 
 ### Installation
 
-1. **Clone the repository** (using GitHub Desktop or terminal):
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/shaikhjahir750/AreoRAG.git
    cd AreoRAG
@@ -146,7 +171,7 @@ Copy `.env.example` to create your `.env` file:
 ```bash
 cp .env.example .env
 ```
-Open `.env` and fill in your API credentials:
+Fill in your API credentials:
 ```env
 GOOGLE_API_KEY="your_google_api_key_here"
 GROQ_API_KEY="your_groq_api_key_here"
@@ -179,17 +204,90 @@ The script will:
 1. Scan `docs/documents/` for all downloaded PDFs.
 2. Check ChromaDB to skip documents already indexed (saving quota).
 3. Enrich pages with domain metadata (`agency`, `mission`, `category`).
-4. Chunk text with `RecursiveCharacterTextSplitter`.
-5. Batch embed vectors using Google's embedding model into `chroma_db/`.
+4. Chunk text with `RecursiveCharacterTextSplitter` (1000 chunk size / 200 overlap).
+5. Batch embed vectors using `gemini-embedding-001` into `chroma_db/`.
 
 ---
 
-### 3. Run the Retrieval Pipeline
+### 3. Run the Retrieval & QA Pipeline
 
-Query the indexed aerospace corpus via the interactive terminal interface:
-```bash
-python rag_system/rag_retrieval_pipeline.py
-```
+Launch the interactive terminal Q&A interface:
+
+* **Dense Retrieval + FlashRank Reranker (Default)**:
+  ```bash
+  python rag_system/rag_retrieval_pipeline.py
+  ```
+
+* **Hybrid Retrieval (Dense + BM25) + FlashRank Reranker**:
+  ```bash
+  python rag_system/rag_retrieval_pipeline2.py
+  ```
+
+---
+
+### 4. Run the Evaluation Suite
+
+To reproduce the benchmark evaluations on your own pipeline:
+
+1. **Generate Answers for the Evaluation Dataset**:
+   * For the Dense Pipeline:
+     ```bash
+     python rag_evaluation/similarity_answer.py
+     ```
+   * For the Hybrid Pipeline:
+     ```bash
+     python rag_evaluation/rag_hybrid_ans.py
+     ```
+
+2. **Execute Ragas LLM-as-a-Judge Evaluation**:
+   ```bash
+   python rag_evaluation/rag_eval.py
+   ```
+   The evaluated scores will be printed to the console and exported to `rag_evaluation/rag_evaluation_report.csv`.
+
+---
+
+## 📊 RAG Evaluation & Benchmark Results
+
+### Evaluation Methodology & Metrics
+
+The system was evaluated using the **Ragas** framework with **Google Gemini** (`gemini-flash-lite-latest`) as the LLM judge and `gemini-embedding-001` for embedding distance computations. 
+
+The benchmark dataset consists of 30 curated technical test cases covering:
+- **Apollo 11**: Mission timelines, flight dynamics, AGC computer alarms (1201/1202), and lunar descent telemetry.
+- **Apollo 13**: Oxygen Tank No. 2 rupture, thermostatic switch detanking voltages (65V vs 28V), DPS burn free-return trajectory, and LM *Aquarius* lifeboat operations.
+- **Challenger STS 51-L**: O-ring erosion physics, cold-temperature Viton resiliency loss, joint putty blowholes, and Rogers Commission findings.
+- **Out-of-Domain Controls**: Negative control queries (STS-107 Columbia, Hubble mirror costs, Soviet ASTP) to test hallucination resistance and refusal behavior.
+
+Four standardized RAG metrics were measured:
+1. **Faithfulness**: Measures factual consistency of the generated answer against retrieved context (detects hallucinations).
+2. **Context Recall**: Measures whether all ground-truth facts necessary to answer the question were successfully retrieved.
+3. **Answer Relevancy**: Assesses how directly and concisely the answer addresses the question.
+4. **Context Precision**: Evaluates the signal-to-noise ratio in retrieved context chunks.
+
+---
+
+### Comparative Benchmark Results
+
+| Metric | Dense + FlashRank Reranking (`rag_retrieval_pipeline.py`) | Hybrid (Dense + BM25) + Reranking (`rag_retrieval_pipeline2.py`) | Performance Delta |
+| :--- | :---: | :---: | :---: |
+| **Faithfulness** | **75.52%** (0.755) | 70.07% (0.701) | **+5.45%** (Dense Rerank leads) |
+| **Context Recall** | **73.33%** (0.733) | 63.33% (0.633) | **+10.00%** (Dense Rerank leads) |
+| **Answer Relevancy** | **63.65%** (0.637) | 61.13% (0.611) | **+2.52%** (Dense Rerank leads) |
+| **Context Precision** | **40.93%** (0.409) | 34.98% (0.350) | **+5.95%** (Dense Rerank leads) |
+
+---
+
+### Key Insights & Performance Analysis
+
+1. **High Faithfulness across both architectures (~70–75%)**:
+   - Strict grounding prompts successfully prevent hallucination when reasoning through dense technical investigations (e.g., accurately attributing the Challenger O-ring blowby to sub-zero ambient pad temperatures and unverified launch clearance).
+2. **Superior Context Recall with Dense + FlashRank (73.3%)**:
+   - Expanding the base similarity search window ($k=20$) followed by FlashRank cross-encoder reranking ($top\_n=5$) produced the highest recall of specific engineering values (e.g., exact temperatures, pressures, voltages, and mission elapsed times).
+3. **Robust Out-of-Domain Refusal**:
+   - For unindexed missions (such as Space Shuttle Columbia or Hubble repair missions), both pipelines maintained 100% faithfulness by refusing to fabricate data and emitting the configured fallback statement.
+4. **Hybrid BM25 vs. Dense Trade-offs**:
+   - While BM25 provides strong keyword exact-matching for acronyms and component tags (e.g., "AGC", "DPS", "SRB"), dense semantic search combined with neural reranking proved superior for conceptual investigative questions spanning multi-paragraph explanations.
 
 ---
 
@@ -201,22 +299,10 @@ The documents contain **~760 pages**, generating thousands of text chunks.
   - Limit: ~15 Requests Per Minute (RPM) and a daily quota of 1,500 requests/day.
   - If your daily quota is exhausted, Google returns a 429 quota error with a `retryDelay` until midnight UTC.
   - Thanks to built-in **checkpointing**, if the script stops, running it again will **pick up where it left off** without re-embedding previously indexed documents.
+  - The evaluation harness scripts include built-in `time.sleep(5)` rate pacing to run reliably on free-tier keys.
 
 * **Alternative (Zero-Cost, Unlimited Local Embeddings)**:
   If you prefer not to wait for Google's daily quota reset, switch the embedder in `vectordb_creation.py` to a local model (e.g., `sentence-transformers/all-MiniLM-L6-v2` or `BAAI/bge-small-en-v1.5`). You can still use Google Gemini or Groq as your generation LLM.
-
----
-
-## 📊 RAG Evaluation (Upcoming)
-
-> [!NOTE]
-> **Work in Progress / Coming Soon**:
-> Formal evaluation of the retrieval and generation pipeline will be released in coming updates. The upcoming evaluation framework includes:
-> - **Metrics**: Quantitative tracking of `context_precision`, `context_recall`, `faithfulness`, and `answer_relevancy` using the [Ragas](https://github.com/explodinggradients/ragas) framework.
-> - **Aerospace Benchmark Dataset**: Curated ground-truth test queries covering Apollo 11, Apollo 13, and Challenger STS 51-L anomaly investigations, cross-mission reasoning, and out-of-domain negative controls.
-> - **Comparative Benchmarking**: Comparative analysis between standard vector retrieval, reranked retrieval (Flashrank), and hybrid retrieval architectures.
-> 
-> *Full evaluation scripts, configuration instructions, and benchmark evaluation reports will be officially published here in coming times.*
 
 ---
 

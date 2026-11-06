@@ -46,7 +46,7 @@ print(f"Connected to ChromaDB! Total indexed chunks: {doc_count}")
 # 3. Dense Retriever (Semantic Vector Search)
 dense_retriever = vectorstore.as_retriever(
     search_type="similarity",
-    search_kwargs={"k": 15}
+    search_kwargs={"k": 12}
 )
 
 # 4. Sparse Retriever (BM25 Keyword Search)
@@ -66,13 +66,13 @@ bm25_retriever.k = 10
 # 5. Hybrid Ensemble Retriever (RRF blending: 50% dense, 50% sparse)
 ensemble_retriever = EnsembleRetriever(
     retrievers=[dense_retriever, bm25_retriever],
-    weights=[0.5, 0.5]
+    weights=[0.7, 0.3]
 )
 
 # 6. Reranking Layer (FlashRank applied on top of the ensemble results)
 compressor = FlashrankRerank(
     client=Ranker(cache_dir=tempfile.gettempdir()),
-    top_n=5
+    top_n=8
 )
 
 retriever = ContextualCompressionRetriever(
