@@ -25,6 +25,7 @@ BATCH_SIZE = 15            # 5 chunks (~1,250 tokens) avoids burst 429 rejection
 DELAY_BETWEEN_BATCHES = 6.5  # Keeps throughput safely under 10 RPM (limit: 15 RPM)
 
 def get_nasa_metadata(filename: str):
+    """Fetches the documnets from the docs and  create the metadata for each document"""
     name = filename.lower()
     if "apollo13" in name or "apollo_13" in name:
         mission, category = "Apollo 13", "Anomaly Investigation"
@@ -39,6 +40,7 @@ def get_nasa_metadata(filename: str):
     return "NASA", mission, category
 
 def embed_and_upsert_batch(vectorstore, embedding_model, batch, batch_ids, max_retries=3):
+    """Embedd chunks and upsert them into the vectorstore"""
     texts = [c.page_content for c in batch]
     metadatas = [c.metadata for c in batch]
 
@@ -67,6 +69,7 @@ def embed_and_upsert_batch(vectorstore, embedding_model, batch, batch_ids, max_r
     return False
 
 def main():
+    """Main function to create the chromaDB"""
     pdf_files = sorted(list(DOCS_DIR.glob("*.pdf")))
     if not pdf_files:
         print(f"No PDF files found in '{DOCS_DIR}'.")
