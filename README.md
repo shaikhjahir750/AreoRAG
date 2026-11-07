@@ -316,7 +316,7 @@ Following the integration of **Query Decomposition**, **Targeted Mission Metadat
 
 ## ⚡ Important: Handling Embedding Rate Limits
 
-The 3 indexed mission documents comprise **~700 pages** (generating 1,943 text chunks in ChromaDB). 
+The 3 indexed mission documents comprise **~700 pages** (generating 2058 text chunks in ChromaDB). 
 
 * **Google AI Studio Free Tier**:
   - Limit: ~15 Requests Per Minute (RPM) and a daily quota of 1,500 requests/day.
