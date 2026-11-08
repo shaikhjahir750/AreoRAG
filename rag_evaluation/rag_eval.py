@@ -13,8 +13,8 @@ sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_goo
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-INPUT_FILE = os.path.join(current_dir, "rag_generation_output_hybrid_decomposed_20261107_205127.json")
-OUTPUT_CSV = os.path.join(current_dir, f"rag_hybrid_evaluation_report_{timestamp}.csv")
+INPUT_FILE = os.path.join(current_dir, "rag_generation_output_similarity_decomposed_20261108_201738.json")
+OUTPUT_CSV = os.path.join(current_dir, f"rag_evaluation_report_{timestamp}.csv")
 
 from datasets import Dataset
 from ragas import evaluate

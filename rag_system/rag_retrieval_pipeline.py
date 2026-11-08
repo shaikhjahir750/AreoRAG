@@ -53,7 +53,11 @@ base_retriever = vectorstore.as_retriever(
 )
 
 compressor = FlashrankRerank(
-    client=Ranker(cache_dir=tempfile.gettempdir()), top_n=8
+    client=Ranker(
+        model_name="ms-marco-MiniLM-L-12-v2", 
+        cache_dir=tempfile.gettempdir()
+    ),
+    top_n=8
 )
 retriever = ContextualCompressionRetriever(
     base_compressor=compressor, base_retriever=base_retriever
@@ -148,7 +152,7 @@ def retrieve_decomposed_context(query: str) -> str:
   seen_contents = set()
 
   for sq in plan.sub_queries:
-    search_kwargs = {"k": 8}
+    search_kwargs = {"k": 15}
     if sq.mission != "All":
       search_kwargs["filter"] = {"mission": sq.mission}
 

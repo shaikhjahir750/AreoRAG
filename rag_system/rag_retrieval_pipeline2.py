@@ -13,7 +13,7 @@ logging.getLogger("google").setLevel(logging.WARNING)
 load_dotenv(override=True)
 
 from flashrank import Ranker
-from langchain_classic.retrievers import ContextualCompressionRetriever, EnsembleRetriever
+from langchain_community.retrievers import ContextualCompressionRetriever, EnsembleRetriever
 from langchain_community.document_compressors import FlashrankRerank
 from langchain_community.retrievers import BM25Retriever
 from langchain_community.vectorstores import Chroma
@@ -73,7 +73,11 @@ for m_tag, docs in mission_docs_map.items():
 
 # 4. Global FlashRank compressor
 compressor = FlashrankRerank(
-    client=Ranker(cache_dir=tempfile.gettempdir()), top_n=8
+    client=Ranker(
+        model_name="ms-marco-MiniLM-L-12-v2",
+        cache_dir=tempfile.gettempdir()
+    ), 
+    top_n=8
 )
 
 # Global Fallback Hybrid Retriever (70% dense, 30% BM25)
