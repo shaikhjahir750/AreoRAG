@@ -47,12 +47,19 @@ doc_count = vectorstore._collection.count()
 print(f"Connected to ChromaDB! Total indexed chunks: {doc_count}")
 
 # 3. Base Retriever & FlashRank Compression
+class SafeFlashrankRerank(FlashrankRerank):
+    """Wraps FlashrankRerank to safely handle empty document lists without ONNX input errors."""
+    def compress_documents(self, documents, query, callbacks=None):
+        if not documents:
+            return []
+        return super().compress_documents(documents, query, callbacks=callbacks)
+
 base_retriever = vectorstore.as_retriever(
     search_type="similarity",
     search_kwargs={"k": 15},
 )
 
-compressor = FlashrankRerank(
+compressor = SafeFlashrankRerank(
     client=Ranker(
         model_name="ms-marco-MiniLM-L-12-v2", 
         cache_dir=tempfile.gettempdir()

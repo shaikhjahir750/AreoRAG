@@ -4,7 +4,7 @@
 [![LangChain](https://img.shields.io/badge/Framework-LangChain%20%7C%20LangGraph-orange)](https://www.langchain.com/)
 [![VectorDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)](https://www.trychroma.com/)
 [![Reranker](https://img.shields.io/badge/Reranker-FlashRank-red)](https://github.com/PrithivirajDamodaran/FlashRank)
-[![LLM Support](https://img.shields.io/badge/LLM-Google%20Gemini%20%7C%20Groq-green)](https://groq.com/)
+[![LLM Support](https://img.shields.io/badge/LLM-Google%20Gemini%20Flash%20Lite-green)](https://aistudio.google.com/)
 [![Evaluation](https://img.shields.io/badge/Evaluation-Ragas%20Benchmarked-teal)](rag_evaluation/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 
@@ -25,15 +25,19 @@
 - [Usage Workflow](#-usage-workflow)
   - [1. Download Source Documents](#1-download-source-documents)
   - [2. Preprocess Scanned PDFs & Build ChromaDB](#2-preprocess-scanned-pdfs--build-chromadb)
-  - [3. Run the Retrieval & QA Pipeline](#3-run-the-retrieval--qa-pipeline)
-  - [4. Run the Evaluation Suite](#4-run-the-evaluation-suite)
-- [Important: Handling Embedding Rate Limits](#-important-handling-embedding-rate-limits)
+  - [3. Launch the Web Intelligence Console (FastAPI UI)](#3-launch-the-web-intelligence-console-fastapi-ui)
+  - [4. Run the Retrieval & QA Terminal Pipelines](#4-run-the-retrieval--qa-terminal-pipelines)
+  - [5. Run the AeroBot Conversational Assistant](#5-run-the-aerobot-conversational-assistant)
+  - [6. Run the Evaluation Suite](#6-run-the-evaluation-suite)
 - [📊 RAG Evaluation & Benchmark Results](#-rag-evaluation--benchmark-results)
-  - [Evaluation Methodology & Metrics](#evaluation-methodology--metrics)
-  - [Before vs. After Optimization Benchmarks](#before-vs-after-optimization-benchmarks)
+  - [Evaluation Methodology & Scope Breakdown](#evaluation-methodology--scope-breakdown)
+  - [Comparative Benchmark: Reranker Model & Context Window](#-comparative-benchmark-reranker-model--context-window-top_k)
+  - [Selected Production Pipeline: Why MiniLM with top_k = 8 is the Most Robust](#-selected-production-pipeline-why-minilm-with-top_k--8-is-the-most-robust)
   - [What Improved & Why: Technical Analysis](#what-improved--why-technical-analysis)
-- [GitHub Desktop Workflow](#-github-desktop-workflow)
-- [License](#-license)
+- [⚡ Important: Handling Embedding Rate Limits](#-important-handling-embedding-rate-limits)
+- [🌐 Mission Investigation Web App](#-mission-investigation-web-app)
+- [🖥️ GitHub Desktop Workflow](#-github-desktop-workflow)
+- [📜 License](#-license)
 
 ---
 
@@ -61,14 +65,14 @@ flowchart TD
         SubQueries --> SparseBranch["Targeted Partitioned BM25 Search (k=10)"]
         DenseBranch --> Ensemble["Ensemble Retriever (RRF 70% Dense / 30% BM25)"]
         SparseBranch --> Ensemble
-        Ensemble --> FlashRank["FlashRank Cross-Encoder Reranker (top_n=8)"]
+        Ensemble --> FlashRank["FlashRank Cross-Encoder Reranker (ms-marco-MiniLM-L-12-v2, top_n=8)"]
     end
 
     subgraph Generation_Pipeline ["4. Grounded Generation & QA"]
         FlashRank --> DeduplicatedContext["Deduplicated Technical Context Chunks"]
         DeduplicatedContext --> Prompt["Grounded Expert Prompt"]
         UserQuery --> Prompt
-        Prompt --> LLM["LLM (Google Gemini Flash / Groq LLaMA 3.3)"]
+        Prompt --> LLM["LLM (Google Gemini Flash Lite)"]
         LLM --> Response["Grounded Answer + Citations (< 100 words)"]
     end
 
@@ -90,7 +94,7 @@ AreoRAG curates landmark technical aerospace literature from **NASA** spanning l
 | `nasa_apollo13_review.pdf` | **NASA** | 208 | Apollo 13 | Service module oxygen tank rupture, pre-flight detanking electrical arcing, and Cortright Board review |
 | `nasa_challenger_rogers_commission.pdf` | **NASA** | 261 | Challenger STS 51-L | Rogers Commission presidential investigation on right SRB field joint O-ring failure, cold temperatures, and launch risk decisions |
 
-> Total: **699 pages** of dense technical aerospace documentation, yielding **~1,943 text chunks** in ChromaDB.
+> Total: **699 pages** of dense technical aerospace documentation, yielding **2,058 text chunks** in ChromaDB.
 
 ---
 
@@ -101,10 +105,11 @@ AreoRAG curates landmark technical aerospace literature from **NASA** spanning l
 - **Dual Retrieval Architectures**:
   - **Dense + Rerank**: Deep semantic similarity via ChromaDB coupled with FlashRank contextual reranking.
   - **Hybrid Ensemble (RRF)**: Blended reciprocal rank fusion combining dense embeddings (70%) and lexical BM25 keyword matching (30%), filtered through cross-encoder reranking.
-- **Cross-Encoder Reranking**: Utilizes `flashrank` (`ms-marco-TinyBERT-L-2-v2`) to eliminate irrelevant chunks and prioritize exact technical answers.
+- **Production Cross-Encoder Reranking**: Utilizes `flashrank` with **MiniLM-L-12-v2** (`ms-marco-MiniLM-L-12-v2`, `top_n=8`), providing 12 transformer layers of deep semantic discrimination to achieve a benchmark-topping **49.82% Context Precision**.
 - **Strict Grounding & Hallucination Prevention**: Prompts enforce exact contextual grounding; unanswerable or out-of-domain queries fallback cleanly to `"I cannot find relevant information in the indexed mission documents."`
-- **Quota-Aware Batch Ingestion**: Ingests in configurable batches with sleep intervals to respect API limits (15 RPM).
-- **Full Ragas Evaluation Suite**: Pre-configured benchmark harness assessing `faithfulness`, `answer_relevancy`, `context_recall`, and `context_precision` on verified aerospace ground-truth datasets.
+- **Interactive Aerospace Assistant (AeroBot)**: Conversational spaceflight engineer assistant (`chat bot/areo_bot.py`) powered by Google Gemini (`gemini-flash-lite-latest`) with sliding-window history (6 turns), token consumption tracking, and topic boundary routing to AeroRAG.
+- **Quota-Aware Batch Ingestion**: Ingests in configurable batches with sleep intervals to respect API limits (15 RPM / 500 RPD).
+- **Full Ragas Evaluation Suite**: Pre-configured benchmark harness assessing `faithfulness`, `answer_relevancy`, `context_recall`, and `context_precision` on verified aerospace ground-truth datasets with rate-limit pacing (`time.sleep(5)`).
 
 ---
 
@@ -116,6 +121,15 @@ AreoRAG/
 ├── .gitignore                                 # Excludes venv, ChromaDB & raw PDFs
 ├── requirements.txt                           # Project dependencies
 ├── README.md                                  # Documentation & evaluation benchmarks
+├── app.py                                     # FastAPI web application backend & live Gemini quota tracker
+├── test.py                                    # API key verification & ChromaDB collection integrity utility
+├── templates/
+│   └── index.html                             # Multi-view web console (Home, AeroRAG, AeroBot, About & Quota)
+├── static/
+│   ├── css/style.css                          # Aerospace dark telemetry design system
+│   └── js/app.js                              # Frontend controller, RAG execution, and live quota polling
+├── chat bot/
+│   └── areo_bot.py                            # Interactive general aerospace conversational assistant (Gemini)
 ├── docs/
 │   ├── document_download_script.py            # Automated downloader for NASA source PDFs
 │   └── documents/                             # Target directory for source PDFs (.gitkeep tracked)
@@ -123,16 +137,17 @@ AreoRAG/
 │   ├── vectordb_creation.py                   # Initial PDF parsing, metadata tagging, chunking & vector indexing
 │   ├── scanedPDF_to_cleanedTXT.py             # OCR noise sanitization pipeline for scanned historical PDFs
 │   ├── cleanedtxt_vector_creation.py          # Vectorstore upsert script for cleaned document text
-│   ├── rag_retrieval_pipeline.py              # Dense retrieval + Query Decomposition + FlashRank pipeline
-│   └── rag_retrieval_pipeline2.py             # Hybrid (Dense + BM25) + Query Decomposition + FlashRank pipeline
+│   ├── rag_retrieval_pipeline.py              # Dense retrieval + Query Decomposition + FlashRank MiniLM pipeline
+│   └── rag_retrieval_pipeline2.py             # Hybrid (Dense + BM25) + Query Decomposition + FlashRank MiniLM pipeline
 └── rag_evaluation/
     ├── similarity_answer.py                   # Standard dense pipeline answer generation
     ├── similarity_decomposed_answers.py       # Decomposed dense pipeline answer generation
     ├── rag_hybrid_ans.py                      # Standard hybrid pipeline answer generation
     ├── hybrid_decomposed_answer.py            # Decomposed hybrid pipeline answer generation
     ├── rag_eval.py                            # Ragas automated LLM-as-a-judge evaluation runner
-    ├── rag_evaluation_report_20261107_214620.csv # Decomposed Dense evaluation metrics report
-    └── rag_hybrid_evaluation_report_20261107_214929.csv # Decomposed Hybrid evaluation metrics report
+    ├── rag_evaluation_report_20261107_214620.csv # Baseline TinyBERT (top_k=8) evaluation report
+    ├── rag_evaluation_report_20261108_204745.csv # FlashRank MiniLM (top_k=5) evaluation report
+    └── rag_evaluation_report_20261108_212508.csv # Selected FlashRank MiniLM (top_k=8) evaluation report
 ```
 
 ---
@@ -143,8 +158,7 @@ AreoRAG/
 
 - Python 3.10 or higher
 - [GitHub Desktop](https://desktop.github.com/) (or Git CLI)
-- A Google AI Studio API Key ([Get one here](https://aistudio.google.com/))
-- *(Optional)* A Groq Cloud API Key ([Get one here](https://console.groq.com/))
+- A Google AI Studio API Key ([Get one here](https://aistudio.google.com/)) (powers both AeroRAG and AeroBot)
 
 ### Installation
 
@@ -180,7 +194,6 @@ cp .env.example .env
 Fill in your API credentials:
 ```env
 GOOGLE_API_KEY="your_google_api_key_here"
-GROQ_API_KEY="your_groq_api_key_here"
 ```
 
 > ⚠️ **Security Warning**: Never commit `.env` to GitHub. It is ignored by `.gitignore`.
@@ -212,23 +225,60 @@ This downloads the source mission PDFs (~46 MB) into `docs/documents/`.
 
 ---
 
-### 3. Run the Retrieval & QA Pipeline
+### 3. Launch the Web Intelligence Console (FastAPI UI)
 
-Launch the interactive terminal Q&A interface with integrated Query Decomposition:
+To launch the multi-view aerospace console with live Gemini Free Tier quota tracking:
 
-* **Decomposed Dense Retrieval + FlashRank Reranker (Recommended)**:
+```bash
+python app.py
+# or
+uvicorn app:app --reload --port 8000
+```
+
+Open your browser and navigate to:
+```
+http://127.0.0.1:8000
+```
+
+The Web UI includes:
+- **Landing / Home View**: Mission overview, corpus statistics, and quick-prompt launchpad.
+- **AeroRAG QA View**: Interactive decomposed retrieval (Dense vs Hybrid), FlashRank reranking inspection, and context chunk explorer.
+- **AeroBot Chat View**: General aerospace chat assistant with turn token tracking and smart boundary routing.
+- **About & Live Quota View**: Real-time Google AI Studio Free Tier quota meter (Requests left today, RPM velocity, reset countdown) and full Ragas benchmark comparison tables.
+
+---
+
+### 4. Run the Retrieval & QA Terminal Pipelines
+
+Launch the interactive terminal Q&A interface with integrated Query Decomposition and FlashRank MiniLM reranking:
+
+* **Decomposed Dense Retrieval + FlashRank MiniLM (Recommended)**:
   ```bash
   python rag_system/rag_retrieval_pipeline.py
   ```
 
-* **Decomposed Hybrid Retrieval (Dense + BM25) + FlashRank Reranker**:
+* **Decomposed Hybrid Retrieval (Dense + BM25) + FlashRank MiniLM**:
   ```bash
   python rag_system/rag_retrieval_pipeline2.py
   ```
 
 ---
 
-### 4. Run the Evaluation Suite
+### 5. Run the AeroBot Conversational Assistant
+
+For broad spaceflight science, astrophysics, and general aerospace inquiries outside the indexed failure reports, launch **AeroBot**:
+
+```bash
+python "chat bot/areo_bot.py"
+```
+
+* **Capabilities**: Answers general aerospace engineering questions (orbital mechanics, rocketry, planetary exploration) powered by Google Gemini (`gemini-flash-lite-latest`).
+* **Intelligent Routing**: Automatically detects inquiries regarding indexed mission investigations (Apollo 11, Apollo 13, Challenger) and politely directs users to the AeroRAG tool for verbatim transcript evidence and flight telemetry.
+* **Token Tracking**: Outputs real-time prompt, completion, and total token usage per conversational turn.
+
+---
+
+### 6. Run the Evaluation Suite
 
 To reproduce the benchmark evaluations on your own pipeline:
 
@@ -339,13 +389,13 @@ Based on empirical benchmark evaluation, **FlashRank MiniLM (`ms-marco-MiniLM-L-
 The 3 indexed mission documents comprise **~700 pages** (generating 2058 text chunks in ChromaDB). 
 
 * **Google AI Studio Free Tier**:
-  - Limit: ~15 Requests Per Minute (RPM) and a daily quota of 1,500 requests/day.
+  - Limit: ~15 Requests Per Minute (RPM) and a daily quota of 500 requests/day.
   - If your daily quota is exhausted, Google returns a 429 quota error with a `retryDelay` until midnight UTC.
   - Thanks to built-in **checkpointing**, if the script stops, running it again will **pick up where it left off** without re-embedding previously indexed documents.
   - The evaluation harness scripts include built-in `time.sleep(5)` rate pacing to run reliably on free-tier keys.
 
 * **Alternative (Zero-Cost, Unlimited Local Embeddings)**:
-  If you prefer not to wait for Google's daily quota reset, switch the embedder in `vectordb_creation.py` to a local model (e.g., `sentence-transformers/all-MiniLM-L6-v2` or `BAAI/bge-small-en-v1.5`). You can still use Google Gemini or Groq as your generation LLM.
+  If you prefer not to wait for Google's daily quota reset, switch the embedder in `vectordb_creation.py` to a local model (e.g., `sentence-transformers/all-MiniLM-L6-v2` or `BAAI/bge-small-en-v1.5`). You can still use Google Gemini as your generation LLM.
 
 ---
 
@@ -360,6 +410,47 @@ If you manage this repository with **GitHub Desktop**:
    - Binary vector database files (`chroma_db/`)
    - Large raw PDFs (`docs/documents/*.pdf`)
 3. You will only see code, configuration, and documentation in your GitHub Desktop commit list, keeping your commits clean and repository size lightweight.
+
+---
+
+## 🌐 Mission Investigation Web App
+
+AreoRAG includes a unified mission-control forensics web application exposing both the **AreoRAG Mission Investigation Console** and the **AeroBot Conversational Assistant**. The application is powered by a high-performance **FastAPI** backend and a responsive, zero-framework HTML/CSS/JS frontend styled with a geometric, dense telemetry terminal aesthetic.
+
+### Key Views:
+1. **Mission Investigation Console**:
+   - 3-pane layout featuring indexed corpus diagnostics, retrieval architecture toggles (Decomposed Dense vs. Decomposed Hybrid), a command bar with preset queries, structured query decomposition plan trees, grounded answers with interactive citation pills, and the Top 8 reranked evidence cards with real FlashRank scores.
+   - Strict 100% negative refusal grounding enforcement on out-of-domain inquiries.
+2. **AeroBot Conversational Assistant**:
+   - Dense timestamped log transcript (no chat bubbles) answering general aerospace, orbital mechanics, and propulsion questions.
+   - Automatic routing detection for restricted mission topics (Apollo 11, Apollo 13, Challenger) with one-click redirection to the Investigation Console.
+3. **System Architecture & Diagnostics**:
+   - End-to-end pipeline flowchart, live-parsed Ragas evaluation benchmark comparison tables (with scope toggling between in-scope and overall metrics), and technical justification for the production MiniLM top_k=8 pipeline.
+
+### Running the Web Application:
+
+* **Windows (PowerShell)**:
+  ```powershell
+  .\run_app.ps1
+  ```
+  *Or manually:*
+  ```powershell
+  .venv\Scripts\Activate.ps1
+  uvicorn api:app --host 127.0.0.1 --port 8000 --reload
+  ```
+
+* **Linux / macOS (Bash)**:
+  ```bash
+  chmod +x run_app.sh
+  ./run_app.sh
+  ```
+  *Or manually:*
+  ```bash
+  source .venv/bin/activate
+  uvicorn api:app --host 127.0.0.1 --port 8000 --reload
+  ```
+
+Open your browser and navigate to: **`http://127.0.0.1:8000`**
 
 ---
 

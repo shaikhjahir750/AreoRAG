@@ -2,33 +2,37 @@
 langchain>=0.2.14
 langchain-core>=0.2.35
 langchain-community>=0.2.12
+langchain-classic>=0.1.0
+langchain-text-splitters>=0.2.0
 langgraph>=0.2.16
- rank-bm25 
- flashrank 
- langchain-google-genai 
- langchain-chroma 
- langchain-core
- langchain_classic
 
-# Provider Integrations
+# LLM Providers & Integrations
 langchain-google-genai>=1.0.8
 google-generativeai>=0.7.2
-langchain_groq
+langchain-google-vertexai>=1.0.0
 
-# Vector Storage & Retrieval
+# Vector Storage, Retrieval & Reranking
 chromadb>=0.5.5
+langchain-chroma>=0.1.2
+flashrank>=0.2.9
+rank-bm25>=0.2.2
 
-# Document Parsing & Processing
+# Document Ingestion, Parsing & OCR Cleanup
 pymupdf>=1.24.9
+pypdf>=4.0.0
+ftfy>=6.2.0
+
+# Evaluation Harness & Benchmarking
+ragas>=0.2.0
+datasets>=2.20.0
+pandas>=2.0.0
+
+# User Interface, Validation & Utilities
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+streamlit>=1.37.1
 pydantic>=2.8.2
 pydantic-settings>=2.4.0
-pypdf
-# Evaluation Harness
-ragas>=0.1.14
-datasets>=2.20.0
-
-# User Interface & Utilities
-streamlit>=1.37.1
 python-dotenv>=1.0.1
 requests>=2.32.3
 tqdm>=4.66.5

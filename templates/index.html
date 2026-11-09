@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AERORAG // Aerospace Mission Intelligence & Investigation Console</title>
+  
+  <!-- Typography: Inter for UI Sans, JetBrains Mono for Telemetry -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tactical Aerospace Terminal Design System -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+</head>
+<body>
+
+  <!-- ====================================================================== -->
+  <!-- 1. System Header & Operational Flight Bar                                -->
+  <!-- ====================================================================== -->
+  <header class="app-header">
+    <div class="header-container">
+      
+      <!-- Left: Terminal Branding -->
+      <div class="brand" onclick="switchView('home')" title="AeroRAG Mission Intelligence Console">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">AERORAG</span>
+          <span class="brand-channel">// MISSION INTEL</span>
+          <span class="brand-tag">v2.1-stable</span>
+        </div>
+      </div>
+
+      <!-- Center: Low-Profile Segment Switcher Tabs -->
+      <nav class="main-nav" aria-label="Flight Navigation">
+        <button class="nav-btn active" data-view="home" onclick="switchView('home')">
+          <span class="tab-index">01</span>
+          <span>OVERVIEW</span>
+        </button>
+        <button class="nav-btn" data-view="rag" onclick="switchView('rag')">
+          <span class="tab-index">02</span>
+          <span>INVESTIGATION QA</span>
+        </button>
+        <button class="nav-btn" data-view="aerobot" onclick="switchView('aerobot')">
+          <span class="tab-index">03</span>
+          <span>FLIGHT DEBRIEF</span>
+        </button>
+        <button class="nav-btn" data-view="about" onclick="switchView('about')">
+          <span class="tab-index">04</span>
+          <span>BENCHMARKS & QUOTA</span>
+        </button>
+      </nav>
+
+      <!-- Right: Live Telemetry Status Group -->
+      <div class="header-meta">
+        <!-- ChromaDB Status -->
+        <div class="telemetry-badge" title="ChromaDB Local Vectorstore Status">
+          <span class="status-dot"></span>
+          <span>CHROMADB: 2,058 CHUNKS</span>
+        </div>
+
+        <!-- Gemini Quota Tracker Pill -->
+        <div class="quota-telemetry-pill" onclick="switchView('about')" title="Live Gemini Free-Tier Quota (Click for details)">
+          <span class="quota-label">GEMINI:</span>
+          <span class="quota-val" id="nav-quota-remaining">500</span>
+          <span class="quota-max">/ 500 RPD</span>
+        </div>
+
+        <!-- Latency Monitor -->
+        <div class="telemetry-badge mono" id="nav-latency-badge" title="Typical Grounded Synthesis Latency">
+          <span>p95: ~1.1s</span>
+        </div>
+
+        <!-- Quick Shortcut Hint -->
+        <span class="shortcut-pill" title="Press Ctrl+K or Cmd+K anywhere to focus QA Console">Ctrl+K</span>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ====================================================================== -->
+  <!-- 2. Main Content Container                                              -->
+  <!-- ====================================================================== -->
+  <main class="main-content">
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- VIEW 1: OPERATIONS OVERVIEW (HOME)                                 -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="view-home" class="view-section active">
+      
+      <!-- Operations Hero Banner -->
+      <div class="ops-hero">
+        <div class="ops-hero-meta">
+          <span class="ops-subsystem-tag">AEROSPACE TECHNICAL INVESTIGATION PLATFORM</span>
+          <span class="ops-timestamp mono" id="ops-clock-utc">SYS_TIME: UTC 00:00:00</span>
+        </div>
+        <h1>Grounded Aerospace Mission Intelligence</h1>
+        <p>
+          AeroRAG interrogates primary NASA flight telemetry, post-flight mission debriefs, and presidential investigation board reports. Engineered with multi-mission query decomposition, FlashRank MiniLM cross-encoder reranking, and strict contextual grounding to eliminate hallucinations.
+        </p>
+      </div>
+
+      <!-- Linear Telemetry Strip -->
+      <div class="telemetry-strip">
+        <div class="telemetry-cell">
+          <span class="cell-label">Indexed Literature</span>
+          <span class="cell-value">699</span>
+          <span class="cell-note">Primary scanned NASA report pages</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="cell-label">Vector Space</span>
+          <span class="cell-value">2,058</span>
+          <span class="cell-note">Normalized ChromaDB embeddings</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="cell-label">Context Precision</span>
+          <span class="cell-value">49.82%</span>
+          <span class="cell-note">FlashRank MiniLM (top_k=8)</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="cell-label">Hallucination Refusal</span>
+          <span class="cell-value">100.0%</span>
+          <span class="cell-note">Zero ungrounded out-of-scope claims</span>
+        </div>
+      </div>
+
+      <!-- Section: Indexed Primary Documents Manifest -->
+      <div class="section-headline">
+        <h2>Indexed Primary Investigation Manifest</h2>
+        <span class="mono" style="font-size: 0.72rem; color: var(--text-muted);">SOURCE REPOSITORIES: MSC // CORTRIGHT // ROGERS</span>
+      </div>
+
+      <div class="missions-trio-grid">
+        
+        <!-- Mission Card 1: Apollo 11 -->
+        <article class="mission-panel">
+          <div class="mission-panel-header">
+            <span class="mission-code-badge badge-apollo11">APOLLO 11</span>
+            <span class="doc-identifier">NASA MSC-00171 • NOV 1969</span>
+          </div>
+          <div class="mission-panel-body">
+            <h3>Apollo 11 Mission Report</h3>
+            <p>
+              First lunar landing timeline, LM <em>Eagle</em> descent flight dynamics, 1201/1202 Executive Overflow AGC alarms, manual boulder field avoidance, and Sea of Tranquility landing point coordinates.
+            </p>
+            <div class="mission-stats-row">
+              <span>Pages: <strong>230</strong></span>
+              <span>Chunks: <strong>694</strong></span>
+              <span>Domain: <strong>Lunar Operations</strong></span>
+            </div>
+          </div>
+          <div class="mission-panel-footer">
+            <span class="prompt-lead">Quick Inquiries:</span>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('Which computer alarms occurred during Apollo 11 powered descent, and how did the crew respond?')">
+              &gt; 1201 &amp; 1202 Executive Overflow Alarms
+            </button>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('How did the actual Apollo 11 landing point compare with the planned landing point?')">
+              &gt; Planned vs Actual Landing Coordinates
+            </button>
+          </div>
+        </article>
+
+        <!-- Mission Card 2: Apollo 13 -->
+        <article class="mission-panel">
+          <div class="mission-panel-header">
+            <span class="mission-code-badge badge-apollo13">APOLLO 13</span>
+            <span class="doc-identifier">CORTRIGHT REPORT • JUNE 1970</span>
+          </div>
+          <div class="mission-panel-body">
+            <h3>Apollo 13 Review Board</h3>
+            <p>
+              Service Module oxygen tank 2 rupture, pre-flight detanking thermostatic switch arcing at 65V, Teflon insulation ignition, fuel cell shutdown, and emergency lunar flyby trajectory.
+            </p>
+            <div class="mission-stats-row">
+              <span>Pages: <strong>208</strong></span>
+              <span>Chunks: <strong>628</strong></span>
+              <span>Domain: <strong>System Investigation</strong></span>
+            </div>
+          </div>
+          <div class="mission-panel-footer">
+            <span class="prompt-lead">Quick Inquiries:</span>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('What specific pre-launch detanking procedure damaged the insulation of the Apollo 13 oxygen tank?')">
+              &gt; Bay 4 Detanking Thermostat Failure
+            </button>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('Why was John Swigert on the Apollo 13 prime crew instead of Thomas Mattingly?')">
+              &gt; Swigert / Mattingly Crew Replacement
+            </button>
+          </div>
+        </article>
+
+        <!-- Mission Card 3: Challenger STS 51-L -->
+        <article class="mission-panel">
+          <div class="mission-panel-header">
+            <span class="mission-code-badge badge-challenger">STS 51-L</span>
+            <span class="doc-identifier">ROGERS COMMISSION • JUNE 1986</span>
+          </div>
+          <div class="mission-panel-body">
+            <h3>Rogers Commission Report</h3>
+            <p>
+              Space Shuttle Challenger accident investigation. Solid Rocket Booster (SRB) aft field joint primary and secondary O-ring resiliency failure caused by 36°F cold temperatures and joint rotation.
+            </p>
+            <div class="mission-stats-row">
+              <span>Pages: <strong>261</strong></span>
+              <span>Chunks: <strong>736</strong></span>
+              <span>Domain: <strong>Presidential Commission</strong></span>
+            </div>
+          </div>
+          <div class="mission-panel-footer">
+            <span class="prompt-lead">Quick Inquiries:</span>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('What happened during Morton Thiokol\'s internal caucus before reversing its recommendation not to launch?')">
+              &gt; Thiokol 30-Minute Internal Caucus
+            </button>
+            <button class="quick-inquiry-btn" onclick="loadSamplePrompt('What temperature was the Challenger launch, and how did it affect the O-rings?')">
+              &gt; Sub-Freezing O-Ring Resiliency Loss
+            </button>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Section: 4-Step Technical Architecture Pipeline -->
+      <div class="section-headline">
+        <h2>End-to-End Grounded Retrieval Pipeline</h2>
+        <span class="mono" style="font-size: 0.72rem; color: var(--text-muted);">LATENCY-OPTIMIZED // RRF &amp; CROSS-ENCODER</span>
+      </div>
+
+      <div class="architecture-pipeline-grid">
+        <div class="pipeline-node">
+          <span class="node-step">01 // PREPROCESSING</span>
+          <h4>OCR Sanitization</h4>
+          <p>Scanned archival PDFs pass through <code>ftfy</code> unicode sanitization and regex filters to eliminate OCR artifacts, hyphenated line breaks, and scanner noise.</p>
+        </div>
+        <div class="pipeline-node">
+          <span class="node-step">02 // DECOMPOSITION</span>
+          <h4>Multi-Mission Planner</h4>
+          <p>Complex or comparative queries are broken down by Gemini into self-contained sub-queries targeting individual missions with strict ChromaDB metadata filters.</p>
+        </div>
+        <div class="pipeline-node">
+          <span class="node-step">03 // RERANKING</span>
+          <h4>FlashRank MiniLM (k=8)</h4>
+          <p>Top 15 vector candidates per mission are scored through a 12-layer cross-encoder (<code>ms-marco-MiniLM-L-12-v2</code>) to maximize Context Precision to 49.82%.</p>
+        </div>
+        <div class="pipeline-node">
+          <span class="node-step">04 // SYNTHESIS</span>
+          <h4>Grounded Flight Synthesis</h4>
+          <p>Gemini Flash Lite generates strictly factual technical debriefs (&lt;100 words). If context is insufficient, it triggers guaranteed 100% refusal.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- VIEW 2: AERORAG QA CONSOLE (HIGH-DENSITY MISSION TERMINAL)          -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="view-rag" class="view-section">
+      <div class="terminal-console">
+        
+        <!-- Terminal Query Input Panel -->
+        <div class="terminal-input-panel">
+          
+          <!-- Terminal Control Bar (Scope Selector & Retrieval Mode) -->
+          <div class="terminal-control-bar">
+            
+            <!-- Mission Scope Filters -->
+            <div class="scope-selector-group">
+              <span class="scope-label">MISSION SCOPE:</span>
+              <button class="scope-btn active" data-scope="all" onclick="selectMissionScope('all')">ALL MISSIONS</button>
+              <button class="scope-btn" data-scope="Apollo 11" onclick="selectMissionScope('Apollo 11')">APOLLO 11</button>
+              <button class="scope-btn" data-scope="Apollo 13" onclick="selectMissionScope('Apollo 13')">APOLLO 13</button>
+              <button class="scope-btn" data-scope="Challenger STS 51-L" onclick="selectMissionScope('Challenger STS 51-L')">STS 51-L</button>
+            </div>
+
+            <!-- Retrieval Mode Switch -->
+            <div class="retrieval-mode-switch">
+              <button id="mode-dense-lbl" class="mode-toggle-btn active" onclick="updateModeSelection('dense')" title="Deep semantic ChromaDB search + FlashRank cross-encoder">
+                DENSE + FLASHRANK (k=8)
+              </button>
+              <button id="mode-hybrid-lbl" class="mode-toggle-btn" onclick="updateModeSelection('hybrid')" title="Reciprocal Rank Fusion (Dense 70% + BM25 30%)">
+                HYBRID (DENSE + BM25)
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Query Editor Surface -->
+          <div class="query-surface">
+            <textarea 
+              id="rag-query-input" 
+              class="query-editor-input" 
+              rows="3" 
+              placeholder="Enter technical aerospace inquiry (e.g., 'What caused the oxygen tank 2 failure on Apollo 13?' or 'Compare Apollo 13 detanking with Challenger cold launch decisions')... [Press Ctrl+Enter to execute]"
+            ></textarea>
+
+            <!-- Bottom Action Strip -->
+            <div class="query-action-strip">
+              <div class="quick-historical-chips">
+                <span class="mono" style="font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase;">Prompts:</span>
+                <button class="chip-tag-btn" onclick="setQuery('Which computer alarms occurred during Apollo 11 powered descent, and how did the crew respond?')">Apollo 11 AGC Alarms</button>
+                <button class="chip-tag-btn" onclick="setQuery('What specific detanking procedure damaged the insulation of the Apollo 13 oxygen tank?')">Apollo 13 Tank Arcing</button>
+                <button class="chip-tag-btn" onclick="setQuery('What happened during Morton Thiokol\'s internal caucus before reversing its recommendation not to launch?')">Challenger Thiokol Caucus</button>
+                <button class="chip-tag-btn" onclick="setQuery('How did temperature play a role in both the Apollo 13 and Challenger accidents?')">Comparative: Temperature</button>
+                <button class="chip-tag-btn chip-refusal" onclick="setQuery('What caused the foam strike damage on Space Shuttle Columbia STS-107?')">Test Refusal (Columbia)</button>
+              </div>
+
+              <button id="btn-submit-rag" class="btn-terminal-exec" onclick="submitRAGQuery()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span>EXECUTE QUERY</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Monospaced Loading Skeleton -->
+        <div id="rag-loading" class="terminal-loader hidden">
+          <div class="loader-terminal-line">
+            <span class="loader-bracket">[RUNNING PIPELINE]</span>
+            <span id="loading-step-text">DECOMPOSING MULTI-MISSION QUERY &amp; TARGETING METADATA...</span>
+            <span class="loader-cursor"></span>
+          </div>
+          <div class="loader-progress-track">
+            <div class="loader-progress-bar"></div>
+          </div>
+          <span class="mono" style="font-size: 0.7rem; color: var(--text-dim);">CHROMADB PARTITION SEARCH // FLASHRANK MINILM-L-12 CROSS-ENCODER</span>
+        </div>
+
+        <!-- Dual-Pane Transparency Inspector (Synthesis on Left, Chunks on Right) -->
+        <div id="rag-results" class="terminal-results-split hidden">
+          
+          <!-- Left Pane: Investigator Synthesis -->
+          <div class="synthesis-pane">
+            
+            <!-- Query Decomposition Plan Deck -->
+            <div class="telemetry-card">
+              <div class="telemetry-card-header">
+                <span class="telemetry-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                  QUERY DECOMPOSITION PLAN
+                </span>
+                <span class="telemetry-card-meta mono" id="rag-latency-badge">LATENCY: 0 ms</span>
+              </div>
+              <div class="subquery-deck" id="rag-plan-container">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Grounded Technical Answer Card -->
+            <div class="telemetry-card">
+              <div class="telemetry-card-header">
+                <span class="telemetry-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                  GROUNDED INVESTIGATION DEBRIEF
+                </span>
+                <span class="telemetry-card-meta mono">STRICT CONTEXT ATTRIBUTION</span>
+              </div>
+
+              <!-- Refusal Alert Notice (Hidden by default) -->
+              <div id="rag-refusal-alert" class="refusal-alert-box hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div class="refusal-text">
+                  <strong>NOTICE: Contextual Refusal Triggered</strong><br>
+                  The query inquired about unindexed events or topics outside our verified Apollo 11, Apollo 13, and Challenger reports. The system strictly refused to hypothesize or hallucinate ungrounded facts.
+                </div>
+              </div>
+
+              <!-- Synthesized Answer Text -->
+              <div class="answer-body-block">
+                <div id="rag-answer-content" class="answer-lead-line">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <div class="telemetry-card-footer">
+                <span class="mono" style="font-size: 0.7rem; color: var(--text-dim);">GEMINI FLASH LITE // CONSTRAINED FACTUAL SYNTHESIS</span>
+                <button class="btn-ghost-copy" onclick="copyAnswerText()">[COPY DEBRIEF]</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Pane: Live Telemetry & Chunk Inspector -->
+          <div class="inspector-pane">
+            <div class="telemetry-card">
+              <div class="telemetry-card-header">
+                <span class="telemetry-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  RETRIEVED CONTEXT INSPECTOR (<span id="chunk-count-badge">0</span> CHUNKS)
+                </span>
+                <button class="btn-ghost-copy" onclick="toggleAllChunks()">[EXPAND / COLLAPSE ALL]</button>
+              </div>
+
+              <!-- Scrollable Chunks Deck -->
+              <div class="chunks-deck" id="rag-chunks-container">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <div class="telemetry-card-footer">
+                <span class="mono" style="font-size: 0.7rem; color: var(--text-dim);">FLASHRANK MINILM RERANKED // ms-marco-MiniLM-L-12-v2</span>
+                <span class="mono" style="font-size: 0.7rem; color: var(--cyan-primary);">TOP-K: 8 CHUNKS</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- VIEW 3: AEROBOT CONVERSATIONAL FLIGHT RECORDER DEBRIEF             -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="view-aerobot" class="view-section">
+      <div class="aerobot-workstation">
+        
+        <!-- Left Sidebar: Subsystem Telemetry & Boundaries -->
+        <aside class="aerobot-spec-panel">
+          <div class="spec-header">
+            <div class="spec-avatar">🚀</div>
+            <div class="spec-meta">
+              <h3>AEROBOT</h3>
+              <span class="spec-engine">GEMINI FLASH LITE // GENERAL CONSOLE</span>
+            </div>
+          </div>
+
+          <div class="spec-body">
+            <div class="spec-block">
+              <h4>OPERATIONAL SCOPE</h4>
+              <p>Orbital dynamics, rocket propulsion, astrophysics, launch vehicle staging, and broad spaceflight history.</p>
+            </div>
+
+            <div class="spec-boundary-alert">
+              <strong>MISSION ROUTING BOUNDARY</strong>
+              For detailed telemetry, verbatim transcripts, and failure investigations on Apollo 11, Apollo 13, or Challenger, AeroBot directs inquiries to the grounded <strong>AeroRAG QA</strong> console.
+            </div>
+
+            <!-- Session Telemetry Metrics -->
+            <div class="telemetry-meters-list">
+              <div class="telemetry-item">
+                <span>CONVERSATION TURNS</span>
+                <span id="chat-turns-count">0 / 6 max</span>
+              </div>
+              <div class="telemetry-item">
+                <span>SESSION TOKENS</span>
+                <span id="chat-total-tokens">0</span>
+              </div>
+              <div class="telemetry-item">
+                <span>SLIDING WINDOW</span>
+                <span>6 TURNS</span>
+              </div>
+              <div class="telemetry-item">
+                <span>INFERENCE ENGINE</span>
+                <span class="mono" style="color: var(--cyan-primary);">gemini-flash-lite</span>
+              </div>
+            </div>
+
+            <!-- Sidebar Reset Action -->
+            <button class="btn-sidebar-reset" onclick="clearAeroBotChat()" title="Reset session turns, history, and token meters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              <span>RESET CONVERSATION</span>
+            </button>
+
+            <!-- Quick Inquiries -->
+            <div class="spec-block" style="margin-top: 0.5rem;">
+              <h4>SAMPLE QUERIES</h4>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <button class="quick-inquiry-btn" onclick="sendQuickChatMessage('What is the difference between specific impulse (Isp) and total thrust in rocket engines?')">
+                  &gt; Specific Impulse vs Thrust
+                </button>
+                <button class="quick-inquiry-btn" onclick="sendQuickChatMessage('Explain how a Hohmann transfer orbit calculates delta-v for interplanetary transfer.')">
+                  &gt; Hohmann Transfer Delta-v
+                </button>
+                <button class="quick-inquiry-btn" onclick="sendQuickChatMessage('Why are Earth-Sun Lagrange points L1 and L2 popular for space telescopes?')">
+                  &gt; Lagrange Point Stability
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Pane: Terminal Chat Viewport -->
+        <main class="aerobot-chat-terminal">
+          
+          <!-- Terminal Header Strip with Reset Control -->
+          <div class="chat-terminal-header">
+            <div class="terminal-title-group">
+              <span class="status-dot"></span>
+              <span class="mono" style="font-size: 0.74rem; font-weight: 600; color: var(--text-high);">FLIGHT DEBRIEF LOG // SESSION ACTIVE</span>
+            </div>
+            <button class="btn-terminal-clear" onclick="clearAeroBotChat()" title="Reset session turns, history, and token meters">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>CLEAR CHAT</span>
+            </button>
+          </div>
+
+          <!-- Stream Viewport -->
+          <div class="chat-stream-viewport" id="chat-messages-stream">
+            
+            <!-- Initial Briefing Turn -->
+            <div class="chat-entry assistant-turn">
+              <div class="chat-meta-bar">
+                <span>AEROBOT // FLIGHT ASSISTANT</span>
+                <span>SYS_INIT: OK</span>
+              </div>
+              <div class="chat-bubble-card">
+                <p><strong>AeroBot online.</strong> I am ready to assist with orbital mechanics, rocketry, planetary science, and general spaceflight engineering.</p>
+                <p style="margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-muted);">
+                  <em>Note: Inquiries regarding the Apollo 11 landing, Apollo 13 tank explosion, or Challenger STS 51-L are governed by the source-grounded AeroRAG QA console.</em>
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Prompt Input Strip -->
+          <div class="chat-input-bar">
+            <div class="chat-input-controls">
+              <input 
+                type="text" 
+                id="aerobot-input" 
+                class="chat-text-input" 
+                placeholder="Ask AeroBot a question about orbital mechanics, propulsion, or space exploration... [Press Enter]" 
+                onkeydown="handleChatKeyDown(event)"
+              />
+              <button class="btn-chat-send" onclick="sendAeroBotMessage()">
+                <span>TRANSMIT</span>
+              </button>
+            </div>
+            <span class="mono" style="font-size: 0.68rem; color: var(--text-dim);">AEROBOT REASONING ENGINE // STRICT RESTRICTED MISSION BOUNDARIES</span>
+          </div>
+
+        </main>
+
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- VIEW 4: BENCHMARKS & API QUOTA TELEMETRY                           -->
+    <!-- ------------------------------------------------------------------ -->
+    <section id="view-about" class="view-section">
+      <div class="eval-dashboard">
+
+        <!-- Quota Telemetry Flight Panel -->
+        <div class="quota-telemetry-panel">
+          <div class="panel-header-strip">
+            <h2>LIVE GEMINI FREE-TIER QUOTA STATUS</h2>
+            <button class="btn-ghost-copy" onclick="fetchLiveQuota()">[REFRESH QUOTA]</button>
+          </div>
+
+          <div class="meters-trio-row">
+            
+            <!-- Meter 1: Daily Requests Left -->
+            <div class="meter-card meter-primary">
+              <span class="meter-tag">REQUESTS REMAINING TODAY</span>
+              <div class="meter-val-row">
+                <span class="meter-val-big" id="dash-requests-remaining">500</span>
+                <span class="meter-val-total">/ 500 RPD</span>
+              </div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="dash-daily-progress" style="width: 100%;"></div>
+              </div>
+              <div class="meter-footer-info">
+                <span id="dash-daily-used">Used Today: 0</span>
+                <span id="dash-daily-pct">100% Available</span>
+              </div>
+            </div>
+
+            <!-- Meter 2: RPM Velocity -->
+            <div class="meter-card">
+              <span class="meter-tag">CURRENT MINUTE VELOCITY (RPM)</span>
+              <div class="meter-val-row">
+                <span class="meter-val-big" id="dash-rpm-used">0</span>
+                <span class="meter-val-total">/ 15 RPM</span>
+              </div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" id="dash-rpm-progress" style="width: 0%;"></div>
+              </div>
+              <div class="meter-footer-info">
+                <span id="dash-rpm-remaining">Remaining this min: 15</span>
+                <span class="mono" id="dash-rpm-status" style="color: var(--emerald-active);">● Normal Velocity</span>
+              </div>
+            </div>
+
+            <!-- Meter 3: Daily Reset Countdown -->
+            <div class="meter-card">
+              <span class="meter-tag">QUOTA RESET COUNTDOWN (00:00 UTC)</span>
+              <div class="meter-val-row">
+                <span class="meter-val-big mono" id="dash-reset-countdown">--h --m --s</span>
+              </div>
+              <div class="meter-bar-track">
+                <div class="meter-bar-fill" style="width: 100%; background: var(--text-dim);"></div>
+              </div>
+              <div class="meter-footer-info">
+                <span>Tier: Google Free Tier</span>
+                <span>Limit: 15 RPM / 500 RPD</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Empirical Ragas Benchmark Evaluation Table -->
+        <div class="benchmark-card">
+          <div class="telemetry-card-header">
+            <span class="telemetry-card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              EMPIRICAL BENCHMARK EVALUATION (RAGAS HARNESS)
+            </span>
+            <span class="telemetry-card-meta mono">3-CONFIGURATION COMPARISON</span>
+          </div>
+
+          <div class="benchmark-table-wrapper">
+            <table class="telemetry-table">
+              <thead>
+                <tr>
+                  <th>PIPELINE CONFIGURATION</th>
+                  <th>EVAL DATE</th>
+                  <th>CONTEXT PRECISION</th>
+                  <th>CONTEXT RECALL</th>
+                  <th>FAITHFULNESS</th>
+                  <th>ANSWER RELEVANCY</th>
+                  <th>NEGATIVE REFUSAL</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Baseline: TinyBERT</strong><br>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">ms-marco-TinyBERT-L-2-v2 (top_k=8)</span>
+                  </td>
+                  <td>2026-11-07</td>
+                  <td>48.97%</td>
+                  <td>88.46%</td>
+                  <td>90.25%</td>
+                  <td>75.37%</td>
+                  <td><span class="benchmark-pill pill-green">100.0%</span></td>
+                  <td><span class="benchmark-pill pill-amber">Baseline</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Experimental: MiniLM (k=5)</strong><br>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">ms-marco-MiniLM-L-12-v2 (top_k=5)</span>
+                  </td>
+                  <td>2026-11-08</td>
+                  <td>46.31%</td>
+                  <td>67.31%</td>
+                  <td>97.63%</td>
+                  <td>79.22%</td>
+                  <td><span class="benchmark-pill pill-green">100.0%</span></td>
+                  <td><span class="benchmark-pill pill-amber">Recall Bottleneck</span></td>
+                </tr>
+                <tr class="selected-row">
+                  <td>
+                    <strong>Production: MiniLM (k=8)</strong><br>
+                    <span style="font-size: 0.7rem; color: var(--cyan-primary);">ms-marco-MiniLM-L-12-v2 (top_k=8)</span>
+                  </td>
+                  <td>2026-11-08</td>
+                  <td><strong style="color: var(--cyan-primary);">49.82%</strong></td>
+                  <td><strong>84.62%</strong></td>
+                  <td><strong>89.90%</strong></td>
+                  <td><strong>72.69%</strong></td>
+                  <td><span class="benchmark-pill pill-green">100.0%</span></td>
+                  <td><span class="benchmark-pill pill-blue">Selected Production</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Document Provenance Manifest -->
+        <div class="benchmark-card">
+          <div class="telemetry-card-header">
+            <span class="telemetry-card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              DOCUMENT PROVENANCE MANIFEST
+            </span>
+            <span class="telemetry-card-meta mono">3 VERIFIED NASA SOURCES</span>
+          </div>
+
+          <div class="benchmark-table-wrapper">
+            <table class="telemetry-table manifest-table">
+              <thead>
+                <tr>
+                  <th>DOCUMENT CODE</th>
+                  <th>TITLE</th>
+                  <th>AGENCY &amp; DATE</th>
+                  <th>PAGES</th>
+                  <th>CHUNKS</th>
+                  <th>PRIMARY DOMAIN</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono-cell"><code>MSC-00171</code></td>
+                  <td>Apollo 11 Mission Report</td>
+                  <td>NASA Manned Spacecraft Center • Nov 1969</td>
+                  <td class="mono-cell">230</td>
+                  <td class="mono-cell">694</td>
+                  <td>Lunar Landing &amp; LM Descent Dynamics</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell"><code>CORTRIGHT-1970</code></td>
+                  <td>Report of the Apollo 13 Review Board</td>
+                  <td>NASA Langley Research Center • June 1970</td>
+                  <td class="mono-cell">208</td>
+                  <td class="mono-cell">628</td>
+                  <td>Cryogenic Oxygen Tank 2 Detanking Electrical Arcing</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell"><code>ROGERS-COMM-1986</code></td>
+                  <td>Presidential Commission on Space Shuttle Challenger</td>
+                  <td>Presidential Commission • June 1986</td>
+                  <td class="mono-cell">261</td>
+                  <td class="mono-cell">736</td>
+                  <td>SRB Field Joint O-Ring Failure &amp; Temperature Dynamics</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Telemetry Controller -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

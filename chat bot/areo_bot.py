@@ -1,12 +1,27 @@
+import os
 from dotenv import load_dotenv
 load_dotenv(override=True)
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage,HumanMessage,AIMessage
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
-from langchain_groq import ChatGroq
-llm = ChatGroq(
-    model="openai/gpt-oss-20b",
-    temperature=0.7
+
+# 1. Load variables from .env in project root
+load_dotenv(override=True)
+
+# 2. Extract key
+api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+if not api_key:
+  raise ValueError(
+      "API key missing! Check that GOOGLE_API_KEY is defined in your .env file."
+  )
+
+# 3. Pass directly to the chat model
+llm = ChatGoogleGenerativeAI(
+    model="gemini-flash-lite-latest",
+    api_key=api_key,  # Explicitly passed here
+    temperature=0.0,
+    request_timeout=120,
+    max_retries=3,
 )
 SYSTEM_PROMPT = """You are AeroBot, an aerospace engineer and space-science assistant (orbital mechanics, rocketry, planetary exploration, astrophysics, mission history).
 
