@@ -6,8 +6,28 @@
  */
 
 // Global API Endpoint Base:
-// If accessed directly via file:// or Live Server (e.g. port 5500), route requests to the running FastAPI server on port 8000
-const API_BASE = (window.location.protocol === 'http:' && window.location.port === '8000') ? '' : 'http://127.0.0.1:8000';
+// Use same-origin relative URLs whenever served from FastAPI (HTTP/HTTPS on any port, e.g. 8000, 10000, or Render).
+// Only fall back to local backend ports if opened directly via file:// or a static dev server (e.g. VS Code Live Server 5500).
+const isStaticPreview =
+  window.location.protocol === 'file:' ||
+  ['5500', '5501', '5502'].includes(window.location.port);
+
+let API_BASE = isStaticPreview ? 'http://127.0.0.1:10000' : '';
+
+async function resolvePreviewApiBase() {
+  if (!isStaticPreview) return;
+  for (const candidate of ['http://127.0.0.1:10000', 'http://127.0.0.1:8000']) {
+    try {
+      const res = await fetch(`${candidate}/healthz`);
+      if (res.ok) {
+        API_BASE = candidate;
+        return;
+      }
+    } catch (_) {
+      // Try next candidate port
+    }
+  }
+}
 
 // Operational State Store
 const appState = {
@@ -23,10 +43,11 @@ const appState = {
 // ============================================================================
 // 1. Lifecycle Initialization
 // ============================================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initNavigation();
   initGlobalShortcuts();
   initSystemClock();
+  await resolvePreviewApiBase();
   fetchLiveQuota();
 
   // Poll live quota every 15 seconds
@@ -285,7 +306,10 @@ async function submitRAGQuery() {
     if (data.quota) renderQuotaDisplay(data.quota);
   } catch (err) {
     clearInterval(stepInterval);
-    alert(`AERORAG EXECUTION NOTICE: ${err.message}`);
+    const msg = (err.message === 'Failed to fetch')
+      ? 'Cannot reach the Python FastAPI backend (app.py). index.html cannot process queries on its own—please run `python app.py` and open http://127.0.0.1:10000.'
+      : err.message;
+    alert(`AERORAG EXECUTION NOTICE: ${msg}`);
   } finally {
     if (btnSubmit) btnSubmit.disabled = false;
     if (loadingEl) loadingEl.classList.add('hidden');
@@ -492,7 +516,10 @@ async function sendAeroBotMessage() {
   } catch (err) {
     const placeholder = document.getElementById('bot-typing-placeholder');
     if (placeholder) placeholder.remove();
-    appendChatMessage('assistant', 'Connection notice: Unable to contact reasoning engine. Please verify your Gemini API key credentials.');
+    const msg = (err.message === 'Failed to fetch')
+      ? 'Connection notice: Cannot reach the FastAPI backend (`app.py`). Make sure `python app.py` is running and access the UI through the backend URL (e.g. `http://127.0.0.1:10000`).'
+      : `Connection notice: Unable to contact reasoning engine (${err.message}). Please verify your Gemini API key credentials.`;
+    appendChatMessage('assistant', msg);
   }
 }
 
