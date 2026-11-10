@@ -44,6 +44,13 @@ app.add_middleware(
 )
 
 # ============================================================================
+# Instant Health Check for Render
+# ============================================================================
+@app.get("/healthz", include_in_schema=False)
+def health_check():
+    return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+# ============================================================================
 # Quota & Rate Limit State Tracker for Google Gemini Free Tier
 # ============================================================================
 class GeminiQuotaTracker:
@@ -263,7 +270,6 @@ def execute_rag(query: str, mode: str = "dense") -> Dict[str, Any]:
     for sq in plan_items:
         try:
             search_kwargs = {"k": 15}
-            # Only apply filter if mission is a recognized corpus document
             if sq.mission in ["Apollo 11", "Apollo 13", "Challenger STS 51-L"]:
                 search_kwargs["filter"] = {"mission": sq.mission}
 
@@ -283,7 +289,6 @@ def execute_rag(query: str, mode: str = "dense") -> Dict[str, Any]:
         except Exception as e:
             logging.warning(f"Filtered retrieval for sub-query '{sq.sub_question}' failed: {e}")
             try:
-                # Fallback to simple uncompressed similarity search without filter
                 fallback_docs = rag["vectorstore"].similarity_search(sq.sub_question, k=5)
                 for doc in fallback_docs:
                     if doc.page_content not in seen_contents:
@@ -466,7 +471,6 @@ def query_rag(req: RAGQueryRequest):
     except Exception as e:
         traceback.print_exc()
         logging.error(f"Unhandled error in query_rag endpoint: {e}")
-        # Return fallback response instead of crash
         return {
             "query": req.query,
             "mode": req.mode,
@@ -482,7 +486,6 @@ def query_rag(req: RAGQueryRequest):
 def chat_aerobot(req: AeroBotChatRequest):
     start_time = time.time()
     
-    # Check if question mentions restricted missions
     q_lower = req.question.lower()
     is_restricted = any(kw in q_lower for kw in [
         "apollo 11", "apollo 13", "challenger", "sts 51-l", "rogers commission",
@@ -542,10 +545,15 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 async def serve_index():
     index_file = templates_dir / "index.html"
     if index_file.exists():
-        with open(index_file, "r", encoding="utf-8") as f:
-            return f.read()
-    return HTMLResponse("<h1>AeroRAG Console initializing... Please refresh shortly.</h1>")
+        try:
+            with open(index_file, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=200)
+        except Exception as e:
+            logging.error(f"Error reading index.html: {e}")
+    return HTMLResponse("<h1>AeroRAG Console is Operational</h1><p>API Docs available at <a href='/docs'>/docs</a></p>")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    server_port = int(os.environ.get("PORT", 10000))
+    logging.info(f"Starting server on 0.0.0.0:{server_port}")
+    uvicorn.run("app:app", host="0.0.0.0", port=server_port, reload=False)
