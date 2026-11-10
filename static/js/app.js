@@ -147,12 +147,15 @@ function switchView(viewName, updateHash = true) {
     activeSection.classList.add('active');
   }
 
-  // Auto-focus input on navigation
-  if (viewName === 'rag') {
-    setTimeout(() => document.getElementById('rag-query-input')?.focus(), 120);
-  } else if (viewName === 'aerobot') {
-    setTimeout(() => document.getElementById('aerobot-input')?.focus(), 120);
-  } else if (viewName === 'about') {
+  // Auto-focus input on desktop navigation (avoid unexpected virtual keyboard popup on mobile)
+  if (window.innerWidth > 768) {
+    if (viewName === 'rag') {
+      setTimeout(() => document.getElementById('rag-query-input')?.focus(), 120);
+    } else if (viewName === 'aerobot') {
+      setTimeout(() => document.getElementById('aerobot-input')?.focus(), 120);
+    }
+  }
+  if (viewName === 'about') {
     fetchLiveQuota();
   }
 
@@ -235,7 +238,9 @@ function setQuery(text) {
   const input = document.getElementById('rag-query-input');
   if (input) {
     input.value = text;
-    input.focus();
+    if (window.innerWidth > 768) {
+      input.focus();
+    }
   }
 }
 

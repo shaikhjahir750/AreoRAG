@@ -85,14 +85,30 @@ body {
   background-color: var(--canvas-base);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: rgba(56, 189, 248, 0.15);
   background-image: 
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: center top;
+}
+
+/* Prevent flex/grid children from forcing horizontal page overflow */
+.mission-panel,
+.telemetry-card,
+.terminal-input-panel,
+.synthesis-pane,
+.inspector-pane,
+.aerobot-chat-terminal,
+.aerobot-spec-panel,
+.eval-dashboard,
+.benchmark-card {
+  min-width: 0;
 }
 
 /* Monospace Helpers */
@@ -1741,11 +1757,21 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   9. Responsive Breakpoints
+   9. Responsive Breakpoints (Tablet & Mobile Operations Layout)
    -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .shortcut-pill,
+  .header-meta .telemetry-badge[title*="ChromaDB"] {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) {
   .terminal-results-split {
     grid-template-columns: 1fr;
+  }
+  .chunks-deck {
+    max-height: none;
   }
   .missions-trio-grid {
     grid-template-columns: 1fr;
@@ -1762,20 +1788,282 @@ body {
   .aerobot-workstation {
     grid-template-columns: 1fr;
     height: auto;
+    min-height: 0;
+  }
+  /* Show active chat terminal above spec sidebar on tablet/mobile */
+  .aerobot-chat-terminal {
+    order: 1;
+    height: min(72dvh, 620px);
+    min-height: 440px;
+  }
+  .aerobot-spec-panel {
+    order: 2;
+  }
+}
+
+@media (max-width: 960px) {
+  /* Transform header into clean 2-row sticky flight command bar */
+  .app-header {
+    height: auto;
+    padding: 0;
+  }
+  .header-container {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .brand {
+    order: 1;
+    margin-right: auto;
+    padding: 0.65rem 0 0.65rem 1rem;
+  }
+  .header-meta {
+    order: 2;
+    padding: 0.65rem 1rem 0.65rem 0.5rem;
+    gap: 0.45rem;
+  }
+  #nav-latency-badge {
+    display: none;
+  }
+  .main-nav {
+    order: 3;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    height: auto;
+    border-top: 1px solid var(--border-hairline);
+    background: rgba(7, 10, 16, 0.75);
+  }
+  .nav-btn {
+    justify-content: center;
+    padding: 0.6rem 0.35rem;
+    min-height: 44px;
+    font-size: 0.72rem;
+    text-align: center;
+    line-height: 1.2;
   }
 }
 
 @media (max-width: 640px) {
-  .header-container {
-    padding: 0;
+  .brand-channel {
+    display: none;
   }
-  .main-nav {
-    display: none; /* Can be toggled on mobile */
+  .brand {
+    padding-left: 0.75rem;
   }
-  .telemetry-strip {
-    grid-template-columns: 1fr;
+  .header-meta {
+    padding-right: 0.75rem;
+  }
+  .quota-telemetry-pill {
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
+  .quota-telemetry-pill .quota-max {
+    display: none;
+  }
+  .nav-btn {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.65rem;
+    padding: 0.55rem 0.25rem;
+  }
+  .nav-btn .tab-index {
+    font-size: 0.62rem;
+  }
+
+  .main-content {
+    padding: 0.9rem 0.75rem 2.5rem;
+  }
+
+  /* Overview / Home */
+  .ops-hero {
+    padding: 1.15rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .ops-hero-meta {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .ops-hero h1 {
+    font-size: 1.32rem;
+  }
+  .ops-hero p {
+    font-size: 0.88rem;
+  }
+  .section-headline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .mission-panel-header {
+    padding: 0.85rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .mission-panel-body {
+    padding: 1rem;
+  }
+  .mission-stats-row {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  .mission-panel-footer {
+    padding: 0.75rem 1rem;
+  }
+  .quick-inquiry-btn {
+    white-space: normal;
+    line-height: 1.35;
+    padding: 0.55rem 0.75rem;
   }
   .architecture-pipeline-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* AeroRAG QA Console */
+  .terminal-input-panel {
+    padding: 0.85rem;
+  }
+  .scope-selector-group {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .scope-btn {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+  .retrieval-mode-switch {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .mode-toggle-btn {
+    padding: 7px 6px;
+    text-align: center;
+    font-size: 0.7rem;
+  }
+  /* Prevent mobile Safari/Chrome input auto-zoom (<16px) */
+  .query-editor-input,
+  .chat-text-input {
+    font-size: 16px !important;
+  }
+  .query-action-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+  }
+  .quick-historical-chips {
+    max-width: 100%;
+    width: 100%;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chip-tag-btn {
+    padding: 6px 10px;
+  }
+  .btn-terminal-exec {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 0.84rem;
+  }
+  .subquery-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .subquery-mission {
+    min-width: 0;
+  }
+  .telemetry-card-header {
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+  }
+  .telemetry-card-footer {
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.6rem 0.85rem;
+  }
+  .answer-body-block {
+    padding: 1rem;
+  }
+  .chunks-deck {
+    padding: 0.65rem;
+  }
+  .chunk-header {
+    padding: 0.7rem 0.85rem;
+  }
+
+  /* AeroBot Flight Debrief */
+  .aerobot-chat-terminal {
+    height: calc(100dvh - 132px);
+    min-height: 400px;
+  }
+  .chat-terminal-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+  }
+  .chat-stream-viewport {
+    padding: 0.85rem;
+    gap: 1rem;
+  }
+  .chat-entry {
+    max-width: 94%;
+  }
+  .chat-input-bar {
+    padding: 0.75rem 0.85rem;
+  }
+  .chat-input-controls {
+    gap: 0.5rem;
+  }
+  .chat-text-input {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+  }
+  .btn-chat-send {
+    min-height: 44px;
+    padding: 0 0.9rem;
+    flex-shrink: 0;
+  }
+  .scope-routing-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .scope-banner-btn {
+    width: 100%;
+    padding: 7px 10px;
+    text-align: center;
+  }
+
+  /* Benchmarks & Quota */
+  .quota-telemetry-panel {
+    padding: 1rem;
+  }
+  .panel-header-strip {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .telemetry-table th,
+  .telemetry-table td {
+    padding: 0.65rem 0.75rem;
+    white-space: nowrap;
+  }
+  .manifest-table td {
+    white-space: normal;
+    min-width: 145px;
+  }
+  .manifest-table td.mono-cell {
+    white-space: nowrap;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .telemetry-strip {
+    grid-template-columns: 1fr;
+  }
+  .brand-tag {
+    display: none;
   }
 }
