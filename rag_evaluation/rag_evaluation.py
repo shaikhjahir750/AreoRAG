@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 # Compatibility shim for ragas with current langchain-community
-import langchain_google_vertexai
-sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
+# import langchain_google_vertexai
+# sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
 
 # Ensure rag_system and project root are accessible
 current_dir = os.path.dirname(os.path.abspath(__file__))

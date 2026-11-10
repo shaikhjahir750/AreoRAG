@@ -8,8 +8,8 @@ import pandas as pd
 load_dotenv(override=True)
 
 # Compatibility shim for ragas with current langchain-community
-import langchain_google_vertexai
-sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
+# import langchain_google_vertexai
+# sys.modules.setdefault("langchain_community.chat_models.vertexai", langchain_google_vertexai)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
